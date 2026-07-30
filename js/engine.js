@@ -122,6 +122,13 @@ function renderPlay(c){
       <input id="ratioBInput" type="text" inputmode="numeric" autocomplete="off" placeholder="second">
       <button class="check" data-action="check-ratio">Check</button>
     </div>`;
+  } else if(p.kind==='point'){
+    controls = `<div class="numrow fracrow">
+      <input id="xInput" type="text" autocomplete="off" placeholder="x">
+      <span class="fracbar">,</span>
+      <input id="yInput" type="text" autocomplete="off" placeholder="y">
+      <button class="check" data-action="check-point">Check</button>
+    </div>`;
   } else {
     controls = `<div class="numrow">
       <input id="numInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Type your answer">
@@ -137,6 +144,7 @@ function displayAnswer(p){
   if(p.kind==='frac') return fracLabel(p.answer[0], p.answer[1]);
   if(p.kind==='divrem') return `${p.answer.q} R ${p.answer.r}`;
   if(p.kind==='ratio') return `${p.answer[0]}:${p.answer[1]}`;
+  if(p.kind==='point') return `(${p.answer[0]}, ${p.answer[1]})`;
   return p.answer;
 }
 
@@ -221,6 +229,16 @@ document.addEventListener('click', e=>{
     const [aa,ab] = state.problem.answer;
     answer(fracEq(ua,ub,aa,ab));
   }
+  else if(a==='check-point'){
+    const xi=document.getElementById('xInput'), yi=document.getElementById('yInput');
+    if(!xi||!yi) return;
+    if(xi.value.trim()===''||yi.value.trim()===''){ (xi.value.trim()===''?xi:yi).focus(); return; }
+    const ux=Number(xi.value.trim()), uy=Number(yi.value.trim());
+    if(isNaN(ux)||isNaN(uy)){ xi.focus(); return; }
+    state.userAnswer=[ux,uy];
+    const [ax,ay] = state.problem.answer;
+    answer(ux===ax && uy===ay);
+  }
   else if(a==='next'){ state.problem=SKILLS[state.skill].gen(getLevel(state.skill)); state.answered=false; render(); }
   else if(a==='reset'){ state.score=0; state.streak=0; setLeds(); saveProgress(); }
 });
@@ -245,6 +263,12 @@ document.addEventListener('keydown', e=>{
     if(ai&&bi&&ai.value.trim()!==''&&bi.value.trim()!==''){
       const ua=Number(ai.value.trim()), ub=Number(bi.value.trim());
       if(!isNaN(ua)&&!isNaN(ub)&&ub!==0){ state.userAnswer=[ua,ub]; answer(fracEq(ua,ub,p.answer[0],p.answer[1])); }
+    }
+  } else if(p.kind==='point'){
+    const xi=document.getElementById('xInput'), yi=document.getElementById('yInput');
+    if(xi&&yi&&xi.value.trim()!==''&&yi.value.trim()!==''){
+      const ux=Number(xi.value.trim()), uy=Number(yi.value.trim());
+      if(!isNaN(ux)&&!isNaN(uy)){ state.userAnswer=[ux,uy]; answer(ux===p.answer[0] && uy===p.answer[1]); }
     }
   } else if(p.kind==='num'){
     const inp=document.getElementById('numInput');
