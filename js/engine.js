@@ -5,7 +5,7 @@ const STORAGE_KEY = 'smc_progress';
 
 const state = {
   score:0, streak:0, levels:{},
-  view:'home', homeTab:'skills',
+  view:'home',
   skill:null, mode:'coach',
   problem:null, answered:false, correct:false, userAnswer:null
 };
@@ -52,30 +52,15 @@ function cardHTML(key,c,i){
 }
 
 function renderHome(){
-  const entries = Object.entries(SKILLS);
-  const skillEntries = entries.filter(([,c])=>c.section!=='drills');
-  const drillEntries = entries.filter(([,c])=>c.section==='drills');
-
-  const tabsHTML = `<div class="toggle hometoggle">
-    <button class="${state.homeTab==='skills'?'on':''}" data-action="hometab" data-tab="skills">Skills</button>
-    <button class="${state.homeTab==='drills'?'on':''}" data-action="hometab" data-tab="drills">Drills</button>
-  </div>`;
-
-  let body;
-  if(state.homeTab==='drills'){
-    body = `<div class="grid">${drillEntries.map(([k,c],i)=>cardHTML(k,c,i)).join('')}</div>`;
-  } else {
-    const domains = {};
-    skillEntries.forEach(([k,c])=>{ (domains[c.domain]=domains[c.domain]||[]).push([k,c]); });
-    body = Object.entries(domains).map(([domain, list])=>`
-      <h3 class="domain-heading">${esc(domain)}</h3>
-      <div class="grid">${list.map(([k,c],i)=>cardHTML(k,c,i)).join('')}</div>
-    `).join('');
-  }
+  const domains = {};
+  Object.entries(SKILLS).forEach(([k,c])=>{ (domains[c.domain]=domains[c.domain]||[]).push([k,c]); });
+  const body = Object.entries(domains).map(([domain, list])=>`
+    <h3 class="domain-heading">${esc(domain)}</h3>
+    <div class="grid">${list.map(([k,c],i)=>cardHTML(k,c,i)).join('')}</div>
+  `).join('');
 
   app.innerHTML = `
     <p class="tagline">Pick a skill. <b style="color:var(--orange-soft)">Coach</b> mode explains it; <b style="color:var(--cyan)">Play</b> mode gives endless practice that gets harder as you go.</p>
-    ${tabsHTML}
     ${body}`;
 }
 
@@ -189,7 +174,6 @@ document.addEventListener('click', e=>{
   const el = e.target.closest('[data-action]'); if(!el) return;
   const a = el.dataset.action;
   if(a==='home'){ state.view='home'; state.skill=null; state.problem=null; state.answered=false; state.mode='coach'; render(); }
-  else if(a==='hometab'){ state.homeTab = el.dataset.tab; render(); }
   else if(a==='open'){ state.view='skill'; state.skill=el.dataset.skill; state.mode='coach'; state.problem=null; state.answered=false; render(); }
   else if(a==='mode'){ state.mode=el.dataset.mode; state.problem=null; state.answered=false; render(); }
   else if(a==='ans-bool'){ state.userAnswer=(el.dataset.val==='true'); answer(state.userAnswer===state.problem.answer); }

@@ -180,7 +180,7 @@ function genSpread(level){
 Object.assign(SKILLS, {
   stat:{
     title:"Statistical Questions", icon:"🏀⚾⚽", accent:"#ff6a1a",
-    section:'skills', domain:'Data & Statistics',
+    domain:'Data & Statistics',
     skill:"Tell a real data question from one with a single answer.",
     std:"6.SP.A.1", maxLevel:2,
     gen:genStatQ,
@@ -194,7 +194,7 @@ Object.assign(SKILLS, {
   },
   graphs:{
     title:"Reading Dot Plots", icon:"⚽", accent:"#28d6e6",
-    section:'skills', domain:'Data & Statistics',
+    domain:'Data & Statistics',
     skill:"Read a dot plot: most common value, range, and counts.",
     std:"5.MD.B.2 → 6.SP.B.4", maxLevel:4,
     gen:genDotPlot,
@@ -210,7 +210,7 @@ Object.assign(SKILLS, {
   },
   meanmedian:{
     title:"Mean vs. Median", icon:"⚾", accent:"#ff6a1a",
-    section:'skills', domain:'Data & Statistics',
+    domain:'Data & Statistics',
     skill:"Find the average and the middle value — and know which to trust.",
     std:"6.SP.A.3, 6.SP.B.5", maxLevel:4,
     gen:genMeanMedian,
@@ -226,7 +226,7 @@ Object.assign(SKILLS, {
   },
   spread:{
     title:"Spread & Range", icon:"🏀", accent:"#28d6e6",
-    section:'skills', domain:'Data & Statistics',
+    domain:'Data & Statistics',
     skill:"Measure how spread out the numbers are: steady or streaky?",
     std:"6.SP.A.2", maxLevel:3,
     gen:genSpread,

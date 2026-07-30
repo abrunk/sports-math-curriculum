@@ -83,17 +83,62 @@ function genFracDivide(){
   };
 }
 
-function genFractionOps(level){
+/* Bare computation reps — same math as above, no sports story. Interleaved into
+   Play mode as extra repetition, per the user's request for Kumon-style drilling
+   folded into the skill itself rather than a separate area. */
+function genFracBare(level){
+  if(level===1){
+    const d = rnd([4,5,6,8,10,12]);
+    const isAdd = Math.random()<0.6;
+    let n1,n2,ansN;
+    if(isAdd){ n1=ri(1,d-2); n2=ri(1,d-1-n1); ansN=n1+n2; }
+    else { n1=ri(3,d-1); n2=ri(1,n1-1); ansN=n1-n2; }
+    const [an,ad]=reduceFrac(ansN,d);
+    return { kind:'frac', question:`${n1}/${d} ${isAdd?'+':'−'} ${n2}/${d} = ?`, answer:[an,ad],
+      why:`Same denominator: ${n1} ${isAdd?'+':'−'} ${n2} = ${ansN}, over ${d} → <b>${fracLabel(an,ad)}</b>.` };
+  }
+  if(level===2){
+    const denoms=[2,3,4,5,6,8];
+    let d1,d2; do{ d1=rnd(denoms); d2=rnd(denoms); }while(d1===d2);
+    let n1=ri(1,d1-1), n2=ri(1,d2-1);
+    const isAdd = Math.random()<0.6;
+    if(!isAdd && n1*d2<n2*d1){ [d1,d2]=[d2,d1]; [n1,n2]=[n2,n1]; }
+    const L=lcm(d1,d2);
+    const c1=n1*(L/d1), c2=n2*(L/d2);
+    const resultNum = isAdd ? c1+c2 : c1-c2;
+    const [an,ad]=reduceFrac(resultNum,L);
+    return { kind:'frac', question:`${n1}/${d1} ${isAdd?'+':'−'} ${n2}/${d2} = ?`, answer:[an,ad],
+      why:`Common denominator ${L}: ${n1}/${d1}=${c1}/${L}, ${n2}/${d2}=${c2}/${L}. ${c1} ${isAdd?'+':'−'} ${c2} = ${resultNum} → <b>${fracLabel(an,ad)}</b>.` };
+  }
+  if(level===3){
+    const d1=rnd([2,3,4,5]), n1=ri(1,d1-1);
+    const d2=rnd([2,3,4,5]), n2=ri(1,d2-1);
+    const [an,ad]=reduceFrac(n1*n2, d1*d2);
+    return { kind:'frac', question:`${n1}/${d1} × ${n2}/${d2} = ?`, answer:[an,ad],
+      why:`Multiply straight across: (${n1}×${n2})/(${d1}×${d2}) = ${n1*n2}/${d1*d2} → <b>${fracLabel(an,ad)}</b>.` };
+  }
+  const d1=rnd([2,3,4,5]), n1=ri(1,d1-1);
+  const d2=rnd([2,3,4,5]), n2=ri(1,d2-1);
+  const [an,ad]=reduceFrac(n1*d2, d1*n2);
+  return { kind:'frac', question:`${n1}/${d1} ÷ ${n2}/${d2} = ?`, answer:[an,ad],
+    why:`Flip the second fraction and multiply: ${n1}/${d1} × ${d2}/${n2} = ${n1*d2}/${d1*n2} → <b>${fracLabel(an,ad)}</b>.` };
+}
+
+function genFractionOpsWord(level){
   if(level===1) return genFracLike();
   if(level===2) return genFracUnlike();
   if(level===3) return genFracMultiply();
   return genFracDivide();
 }
 
+function genFractionOps(level){
+  return Math.random()<0.5 ? genFractionOpsWord(level) : genFracBare(level);
+}
+
 Object.assign(SKILLS, {
   fractionops:{
     title:"Fraction Operations", icon:"🥎", accent:"#ffcf3f",
-    section:'skills', domain:'Fractions',
+    domain:'Fractions',
     skill:"Add, subtract, multiply, and divide fractions using sports stats.",
     std:"5.NF", maxLevel:4,
     gen:genFractionOps,
