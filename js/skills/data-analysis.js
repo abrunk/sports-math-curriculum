@@ -164,18 +164,27 @@ function genDecimalMeanMedian(){
       : `Line them up: ${sorted.map(x=>x.toFixed(1)).join(', ')}. The middle one is <b>${median}</b>.` };
 }
 
-/* Real-data variant: 5 real games from a real player's log. Mean is allowed
-   to land on a decimal (round to the nearest tenth) — real stats usually
-   don't divide evenly, which is itself a fair thing to learn. */
+/* Real-data variant: 5 real games, either a real MLB player's hits or a real
+   NBA team's points (balldontlie's free tier only exposes team-level game
+   results, not player stats). Mean is allowed to land on a decimal (round to
+   the nearest tenth) — real stats usually don't divide evenly. */
 function genMeanMedianReal(forceMean, forceMedian){
-  const { player, window } = pickRealWindow(5);
-  const v = window.map(g => g.hits);
+  let name, v, pre;
+  if(Math.random()<0.5){
+    const { team, window } = pickRealNBAWindow(5);
+    name = team.name; v = window.map(g => g.points);
+    pre = `The ${poss(name)} real points scored in 5 games (2024-25 season):`;
+  } else {
+    const { player, window } = pickRealWindow(5);
+    name = player.name; v = window.map(g => g.hits);
+    pre = `${poss(name)} real hits in 5 games (2025 season):`;
+  }
   const sum = v.reduce((a,b)=>a+b,0);
   const mean = Math.round((sum/5)*10)/10;
   const sorted = [...v].sort((a,b)=>a-b), median = sorted[2];
   const askMean = forceMean ? true : forceMedian ? false : Math.random()<0.5;
   return { kind:'num',
-    pre:`${player.name}'s real hits in 5 games (2025 season):`,
+    pre,
     data:v.join(', '),
     question:`What is the ${askMean?'MEAN (average)':'MEDIAN (middle value)'}?${askMean?' Round to the nearest tenth if needed.':''}`,
     answer: askMean?mean:median,
@@ -223,11 +232,19 @@ function genRangeDecimal(){
 }
 
 function genRangeReal(){
-  const { player, window } = pickRealWindow(5);
-  const v = window.map(g => g.hits);
+  let v, pre;
+  if(Math.random()<0.5){
+    const { team, window } = pickRealNBAWindow(5);
+    v = window.map(g => g.points);
+    pre = `The ${poss(team.name)} real points scored in 5 games (2024-25 season):`;
+  } else {
+    const { player, window } = pickRealWindow(5);
+    v = window.map(g => g.hits);
+    pre = `${player.name}'s real hits in 5 games (2025 season):`;
+  }
   const mx = Math.max(...v), mn = Math.min(...v);
   return { kind:'num',
-    pre:`${player.name}'s real hits in 5 games (2025 season):`,
+    pre,
     data:v.join(', '),
     question:`What is the RANGE (highest − lowest)?`,
     answer:mx-mn,

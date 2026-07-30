@@ -71,10 +71,12 @@ function genRatioTotalBare(rMax, scaleMax){
     why:`${totalA} ÷ ${bn} = ${scale}. B = ${bd} × ${scale} = ${totalB}. A + B = <b>${total}</b>.` };
 }
 function genRatioRealWord(){
-  const t = rnd(MLB_DATA.teams);
+  const useNBA = Math.random()<0.5;
+  const t = useNBA ? rnd(NBA_DATA.teams) : rnd(MLB_DATA.teams);
+  const season = useNBA ? '2024-25' : '2025';
   const [an,ab] = reduceFrac(t.wins, t.losses);
   return { kind:'ratio',
-    pre:`In the 2025 season, the ${t.name} finished ${t.wins}-${t.losses}.`,
+    pre:`In the ${season} season, the ${t.name} finished ${t.wins}-${t.losses}.`,
     question:`What is their win-loss ratio, in simplest form?`,
     answer:[an,ab],
     why:`${t.wins}:${t.losses} reduces to <b>${an}:${ab}</b> (divide both sides by ${gcd(t.wins,t.losses)}).` };
@@ -144,6 +146,17 @@ function genUnitRateBare(level){
   return { kind:'num', question:`Find the unit rate: $${total.toFixed(2)} for ${units}.`, answer:price, why:`$${total.toFixed(2)} ÷ ${units} = <b>$${price.toFixed(2)}</b> per 1.` };
 }
 function genUnitRateRealWord(){
+  if(Math.random()<0.5){
+    const t = rnd(NBA_DATA.teams);
+    const totalPoints = t.games.reduce((a,g)=>a+g.points,0);
+    const numGames = t.games.length;
+    const rate = Math.round((totalPoints/numGames)*10)/10;
+    return { kind:'num',
+      pre:`In the 2024-25 season, the ${t.name} scored ${totalPoints} total points across ${numGames} games.`,
+      question:`What is their scoring rate, in points per game, rounded to the nearest tenth?`,
+      answer:rate,
+      why:`${totalPoints} ÷ ${numGames} = <b>${rate}</b> points per game.` };
+  }
   const p = rnd(MLB_DATA.players);
   const totalHits = p.games.reduce((a,g)=>a+g.hits,0);
   const totalAB = p.games.reduce((a,g)=>a+g.atBats,0);
@@ -209,6 +222,15 @@ function genPercentagesBare(level){
     why:`Change = ${Math.abs(after-before)}. ${Math.abs(after-before)} ÷ ${before} = <b>${pct}%</b>.` };
 }
 function genPercentRealWord(){
+  if(Math.random()<0.5){
+    const t = rnd(NBA_DATA.teams);
+    const pct = Math.round((t.wins/(t.wins+t.losses))*100);
+    return { kind:'num',
+      pre:`In the 2024-25 season, the ${t.name} went ${t.wins}-${t.losses}.`,
+      question:`What percent of their games did they win? Round to the nearest whole percent.`,
+      answer:pct,
+      why:`${t.wins} ÷ ${t.wins+t.losses} = ${(t.wins/(t.wins+t.losses)).toFixed(3)} ≈ <b>${pct}%</b>.` };
+  }
   const p = rnd(MLB_DATA.players);
   const totalHits = p.games.reduce((a,g)=>a+g.hits,0);
   const totalAB = p.games.reduce((a,g)=>a+g.atBats,0);

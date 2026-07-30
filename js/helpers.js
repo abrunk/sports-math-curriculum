@@ -11,6 +11,7 @@ const PRAISE = ["Swish!","Nothing but net!","Buzzer beater!","Home run!","Grand 
 const rnd = a => a[Math.floor(Math.random()*a.length)];
 const ri  = (lo,hi) => Math.floor(Math.random()*(hi-lo+1))+lo;
 const esc = s => String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const poss = name => name.endsWith('s') ? `${name}'` : `${name}'s`;
 
 /* ---------- fraction helpers ---------- */
 function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ const t=a%b; a=b; b=t; } return a||1; }
@@ -36,6 +37,17 @@ function pickRealWindow(n){
   const games = player.games;
   const start = ri(0, Math.max(0, games.length - n));
   return { player, window: games.slice(start, start + n) };
+}
+
+/* ---------- real NBA data sampling (data/nba-2024.js, loaded before this) ----------
+   Free-tier balldontlie.io only exposes games/teams, not player stats, so this is
+   real per-game TEAM point totals and win-loss records (derived from raw game
+   results in scripts/fetch-nba-data.js), not individual player stats. */
+function pickRealNBAWindow(n){
+  const team = rnd(NBA_DATA.teams);
+  const games = team.games;
+  const start = ri(0, Math.max(0, games.length - n));
+  return { team, window: games.slice(start, start + n) };
 }
 
 /* ---------- vertical "worksheet" stack for standard-algorithm drills ---------- */
