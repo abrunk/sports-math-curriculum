@@ -71,9 +71,18 @@ function genRatioTotalBare(rMax, scaleMax){
     why:`${totalA} ÷ ${bn} = ${scale}. B = ${bd} × ${scale} = ${totalB}. A + B = <b>${total}</b>.` };
 }
 function genRatioRealWord(){
-  const useNBA = Math.random()<0.5;
-  const t = useNBA ? rnd(NBA_DATA.teams) : rnd(MLB_DATA.teams);
-  const season = useNBA ? '2024-25' : '2025';
+  const source = rnd(['mlb','nba','mls']);
+  if(source==='mls'){
+    const t = rnd(MLS_DATA.teams);
+    const [an,ab] = reduceFrac(t.goalsFor, t.goalsAgainst);
+    return { kind:'ratio',
+      pre:`In the 2025 season, the ${t.name} scored ${t.goalsFor} goals and allowed ${t.goalsAgainst}.`,
+      question:`What is their goals-for-to-goals-against ratio, in simplest form?`,
+      answer:[an,ab],
+      why:`${t.goalsFor}:${t.goalsAgainst} reduces to <b>${an}:${ab}</b> (divide both sides by ${gcd(t.goalsFor,t.goalsAgainst)}).` };
+  }
+  const t = source==='nba' ? rnd(NBA_DATA.teams) : rnd(MLB_DATA.teams);
+  const season = source==='nba' ? '2024-25' : '2025';
   const [an,ab] = reduceFrac(t.wins, t.losses);
   return { kind:'ratio',
     pre:`In the ${season} season, the ${t.name} finished ${t.wins}-${t.losses}.`,
@@ -146,7 +155,17 @@ function genUnitRateBare(level){
   return { kind:'num', question:`Find the unit rate: $${total.toFixed(2)} for ${units}.`, answer:price, why:`$${total.toFixed(2)} ÷ ${units} = <b>$${price.toFixed(2)}</b> per 1.` };
 }
 function genUnitRateRealWord(){
-  if(Math.random()<0.5){
+  const source = rnd(['mlb','nba','mls']);
+  if(source==='mls'){
+    const t = rnd(MLS_DATA.teams);
+    const rate = Math.round((t.goalsFor/t.gamesPlayed)*10)/10;
+    return { kind:'num',
+      pre:`In the 2025 season, the ${t.name} scored ${t.goalsFor} goals across ${t.gamesPlayed} games.`,
+      question:`What is their scoring rate, in goals per game, rounded to the nearest tenth?`,
+      answer:rate,
+      why:`${t.goalsFor} ÷ ${t.gamesPlayed} = <b>${rate}</b> goals per game.` };
+  }
+  if(source==='nba'){
     const t = rnd(NBA_DATA.teams);
     const totalPoints = t.games.reduce((a,g)=>a+g.points,0);
     const numGames = t.games.length;
@@ -222,7 +241,17 @@ function genPercentagesBare(level){
     why:`Change = ${Math.abs(after-before)}. ${Math.abs(after-before)} ÷ ${before} = <b>${pct}%</b>.` };
 }
 function genPercentRealWord(){
-  if(Math.random()<0.5){
+  const source = rnd(['mlb','nba','mls']);
+  if(source==='mls'){
+    const t = rnd(MLS_DATA.teams);
+    const pct = Math.round((t.wins/t.gamesPlayed)*100);
+    return { kind:'num',
+      pre:`In the 2025 season, the ${t.name} won ${t.wins} of their ${t.gamesPlayed} games.`,
+      question:`What percent of their games did they win? Round to the nearest whole percent.`,
+      answer:pct,
+      why:`${t.wins} ÷ ${t.gamesPlayed} = ${(t.wins/t.gamesPlayed).toFixed(3)} ≈ <b>${pct}%</b>.` };
+  }
+  if(source==='nba'){
     const t = rnd(NBA_DATA.teams);
     const pct = Math.round((t.wins/(t.wins+t.losses))*100);
     return { kind:'num',
