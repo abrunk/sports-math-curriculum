@@ -6,7 +6,7 @@ const STORAGE_KEY = 'smc_progress';
 const state = {
   score:0, streak:0, levels:{},
   view:'home',
-  domain:null, skill:null, showCoach:false,
+  domain:null, skill:null,
   problem:null, answered:false, correct:false, userAnswer:null
 };
 
@@ -61,6 +61,7 @@ function setLeds(){ document.getElementById('score').textContent=state.score; do
 function render(){
   setLeds();
   if(state.view==='home'){ renderHome(); return; }
+  if(state.view==='learn'){ renderLearnView(); return; }
   renderDomainPlay();
 }
 
@@ -68,12 +69,15 @@ function domainCardHTML(domain,i){
   const meta = DOMAIN_META[domain] || { icon:'📚', accent:'#ff6a1a', desc:'' };
   const count = Object.values(SKILLS).filter(c=>c.domain===domain).length;
   return `
-    <div class="card" style="--accent:${meta.accent};animation-delay:${i*0.06}s" data-action="open-domain" data-domain="${esc(domain)}">
+    <div class="card" style="--accent:${meta.accent};animation-delay:${i*0.06}s">
       <div class="icon">${meta.icon}</div>
       <h2>${esc(domain)}</h2>
       <p class="skill">${esc(meta.desc)}</p>
       <div class="std">${count} skill${count===1?'':'s'}</div>
-      <button class="go" data-action="open-domain" data-domain="${esc(domain)}">Play →</button>
+      <div class="cardrow">
+        <button class="learn" data-action="open-learn" data-domain="${esc(domain)}">📘 Learn</button>
+        <button class="go" data-action="open-domain" data-domain="${esc(domain)}">Play →</button>
+      </div>
     </div>`;
 }
 
@@ -81,24 +85,41 @@ function renderHome(){
   const domainNames = [...new Set(Object.values(SKILLS).map(c=>c.domain))];
   const body = `<div class="grid">${domainNames.map((d,i)=>domainCardHTML(d,i)).join('')}</div>`;
   app.innerHTML = `
-    <p class="tagline">Pick a category and start practicing — problems adapt to get harder as you go. Tap 💡 any time to see how a skill works.</p>
+    <p class="tagline">Pick a category. <b style="color:var(--cyan)">Learn</b> walks through how it works; <b style="color:var(--orange-soft)">Play</b> jumps straight into practice that adapts to get harder as you go.</p>
     ${body}`;
+}
+
+/* One consolidated instructional page per category — combines every skill's
+   coach explanation in that domain, so there's a single place to read
+   through a whole category instead of stumbling into pieces one at a time
+   during Play. */
+function renderLearnView(){
+  const domain = state.domain;
+  const list = Object.entries(SKILLS).filter(([,c])=>c.domain===domain);
+  const sections = list.map(([,c])=>`
+    <div class="panel learnsection">
+      <h3>${esc(c.title)} <span class="std">${esc(c.std)}</span></h3>
+      ${c.coach}
+    </div>`).join('');
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" data-action="home">← All categories</button>
+      <h2>${esc(domain)}</h2>
+    </div>
+    ${sections}
+    <button class="next" data-action="open-domain" data-domain="${esc(domain)}">Start practicing →</button>`;
 }
 
 function renderDomainPlay(){
   const c = SKILLS[state.skill];
   const lvl = getLevel(state.skill);
-  const bodyHTML = state.showCoach
-    ? `<div class="panel">${c.coach}</div><button class="next" data-action="toggle-coach">Back to practice →</button>`
-    : renderPlay(c);
   app.innerHTML = `
     <div class="topbar">
       <button class="back" data-action="home">← All categories</button>
       <h2>${esc(state.domain)}</h2>
       <span class="lvlpill">${esc(c.title)} · Lv ${lvl}/${c.maxLevel}</span>
     </div>
-    ${state.showCoach ? '' : `<button class="coachlink" data-action="toggle-coach">💡 ${esc(c.title)} — how this works</button>`}
-    ${bodyHTML}`;
+    ${renderPlay(c)}`;
 }
 
 function renderPlay(c){
@@ -209,14 +230,14 @@ function answer(correct){ if(state.answered) return; updateResult(correct); stat
 document.addEventListener('click', e=>{
   const el = e.target.closest('[data-action]'); if(!el) return;
   const a = el.dataset.action;
-  if(a==='home'){ state.view='home'; state.domain=null; state.skill=null; state.problem=null; state.answered=false; state.showCoach=false; render(); }
+  if(a==='home'){ state.view='home'; state.domain=null; state.skill=null; state.problem=null; state.answered=false; render(); }
+  else if(a==='open-learn'){ state.view='learn'; state.domain=el.dataset.domain; render(); }
   else if(a==='open-domain'){
     state.view='play'; state.domain=el.dataset.domain;
     state.skill=pickSkillForDomain(state.domain);
-    state.problem=null; state.answered=false; state.showCoach=false;
+    state.problem=null; state.answered=false;
     render();
   }
-  else if(a==='toggle-coach'){ state.showCoach=!state.showCoach; render(); }
   else if(a==='ans-bool'){ state.userAnswer=(el.dataset.val==='true'); answer(state.userAnswer===state.problem.answer); }
   else if(a==='ans-choice'){ const i=+el.dataset.idx; state.userAnswer=i; answer(i===state.problem.answer); }
   else if(a==='check'){
@@ -267,14 +288,14 @@ document.addEventListener('click', e=>{
   else if(a==='next'){
     state.skill=pickSkillForDomain(state.domain);
     state.problem=SKILLS[state.skill].gen(getLevel(state.skill));
-    state.answered=false; state.showCoach=false;
+    state.answered=false;
     render();
   }
   else if(a==='reset'){ state.score=0; state.streak=0; setLeds(); saveProgress(); }
 });
 
 document.addEventListener('keydown', e=>{
-  if(e.key!=='Enter' || state.view!=='play' || state.showCoach || state.answered) return;
+  if(e.key!=='Enter' || state.view!=='play' || state.answered) return;
   const p = state.problem; if(!p) return;
   if(p.kind==='frac'){
     const ni=document.getElementById('numInput'), di=document.getElementById('denInput');
