@@ -2,25 +2,28 @@
 
 function lcm(a,b){ return a*b/gcd(a,b); }
 
-/* Level 1: add/subtract, like denominators */
+/* Level 1: add/subtract, like denominators.
+   The denominator must be ONE explicitly-shared whole ("attempted d shots
+   this game") — earlier wording split it across "the first half" and "the
+   second half" separately, which read like two different totals and
+   nudged kids toward adding denominators too (1/8 + 3/8 -> wrongly "4/16"). */
 function genFracLike(){
   const p = rnd(PLAYERS);
   const d = rnd([5,6,8,10,12]);
   const isAdd = Math.random()<0.6;
-  let n1,n2,ansN,pre,question;
+  let n1,n2,ansN,question;
   if(isAdd){
     n1 = ri(1, d-2);
     n2 = ri(1, d-1-n1);
     ansN = n1+n2;
-    pre = `${p} made ${n1}/${d} of the team's shots in the first half and ${n2}/${d} in the second half.`;
-    question = `What fraction of the team's shots did ${p} make in total?`;
+    question = `What fraction of ${p}'s shots did ${p} make in total?`;
   } else {
-    n1 = ri(3, d-1);
-    n2 = ri(1, n1-1);
+    n1 = ri(2, d-2);
+    n2 = ri(1, Math.min(n1-1, d-n1));
     ansN = n1-n2;
-    pre = `${p} made ${n1}/${d} of the team's shots in the first half but only ${n2}/${d} in the second half.`;
-    question = `How much greater was ${p}'s first-half fraction than the second half's?`;
+    question = `What fraction MORE of ${p}'s shots did ${p} make in the first half than the second half?`;
   }
+  const pre = `${p} attempted ${d} shots this game, making ${n1} in the first half and ${n2} in the second half.`;
   const [an,ad] = reduceFrac(ansN, d);
   return { kind:'frac', pre, question, answer:[an,ad],
     why: `Same denominator, so just ${isAdd?'add':'subtract'} the tops: ${n1}/${d} ${isAdd?'+':'−'} ${n2}/${d} = ${ansN}/${d} = <b>${fracLabel(an,ad)}</b>.`
