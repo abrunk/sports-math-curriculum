@@ -167,6 +167,8 @@
     font-weight:800;font-family:var(--body);font-size:16px;padding:14px 22px;cursor:pointer}
   .next:active{transform:scale(.97)}
 
+  .attribution{color:var(--muted);font-size:12px;text-align:center;margin:24px 0 0}
+  .attribution a{color:var(--muted)}
   @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
   @keyframes fade{from{opacity:0}to{opacity:1}}
   @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
@@ -190,12 +192,14 @@
     </div>
   </header>
   <main id="app"></main>
+  <p class="attribution">Some problems use real 2025 season stats via the <a href="https://statsapi.mlb.com" target="_blank" rel="noopener">MLB Stats API</a>.</p>
 </div>
 
 <script>
   /* Populated by js/skills/*.js, consumed by js/engine.js */
   const SKILLS = {};
 </script>
+<script src="data/mlb-2025.js"></script>
 <script src="js/helpers.js"></script>
 <script src="js/skills/data-analysis.js"></script>
 <script src="js/skills/fractions.js"></script>

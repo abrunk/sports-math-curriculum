@@ -79,11 +79,38 @@ function genDotFrac(){
   };
 }
 
+/* Real-data variant: same logic as genDotWhole, but the values come from a
+   real player's actual game log instead of random numbers. */
+function genDotWholeReal(n, subs){
+  const { player, window } = pickRealWindow(n);
+  const vals = window.map(g => g.hits);
+  const lo = 0, hi = Math.max(3, Math.max(...vals));
+  const freq = {}; for(let x=lo;x<=hi;x++) freq[x]=0; vals.forEach(v=>freq[v]++);
+  const mx = Math.max(...vals), mn = Math.min(...vals);
+  const sub = rnd(subs);
+  let question, answer, why;
+  if(sub==='mode'){
+    let best=lo, bc=-1; for(let x=lo;x<=hi;x++){ if(freq[x]>bc){bc=freq[x];best=x;} }
+    const ties = Object.keys(freq).filter(k=>freq[k]===bc);
+    if(ties.length>1){ question=`How many games are shown in total?`; answer=n; why=`Count every dot: <b>${n}</b>.`; }
+    else { question=`Which number of hits happened most often (the tallest stack)?`; answer=best; why=`${best} hits happened ${bc} times — the tallest stack.`; }
+  } else if(sub==='range'){
+    question=`What is the range (highest − lowest)?`; answer=mx-mn; why=`Highest ${mx}, lowest ${mn}. Range = ${mx} − ${mn} = <b>${mx-mn}</b>.`;
+  } else if(sub==='count'){
+    const thr=ri(mn+1,Math.max(mn+1,mx)); const c=vals.filter(v=>v>=thr).length;
+    question=`In how many games did ${player.name} get AT LEAST ${thr} hits?`; answer=c; why=`Count every dot at ${thr} or higher: <b>${c}</b>.`;
+  } else {
+    question=`How many games are shown in total?`; answer=n; why=`Count every dot: <b>${n}</b>.`;
+  }
+  return { kind:'num', dotplot:dotPlotHTML(freq,lo,hi,false), pre:`${player.name}'s real hits, game by game (2025 season):`, question, answer, why };
+}
+
 function genDotPlot(level){
   if(level===3) return genDotFrac();
-  if(level===1) return genDotWhole(ri(6,8), ri(2,3), ['mode','total']);
-  if(level===2) return genDotWhole(ri(8,9), ri(3,4), ['count','range']);
-  return genDotWhole(ri(8,12), ri(4,6), ['mode','range','count','total']);
+  const useReal = Math.random()<0.4;
+  if(level===1) return useReal ? genDotWholeReal(ri(6,8), ['mode','total']) : genDotWhole(ri(6,8), ri(2,3), ['mode','total']);
+  if(level===2) return useReal ? genDotWholeReal(ri(8,9), ['count','range']) : genDotWhole(ri(8,9), ri(3,4), ['count','range']);
+  return useReal ? genDotWholeReal(ri(8,12), ['mode','range','count','total']) : genDotWhole(ri(8,12), ri(4,6), ['mode','range','count','total']);
 }
 
 /* ---------- Mean vs. Median (6.SP.A.3, 6.SP.B.5) ---------- */
@@ -137,7 +164,32 @@ function genDecimalMeanMedian(){
       : `Line them up: ${sorted.map(x=>x.toFixed(1)).join(', ')}. The middle one is <b>${median}</b>.` };
 }
 
+/* Real-data variant: 5 real games from a real player's log. Mean is allowed
+   to land on a decimal (round to the nearest tenth) — real stats usually
+   don't divide evenly, which is itself a fair thing to learn. */
+function genMeanMedianReal(forceMean, forceMedian){
+  const { player, window } = pickRealWindow(5);
+  const v = window.map(g => g.hits);
+  const sum = v.reduce((a,b)=>a+b,0);
+  const mean = Math.round((sum/5)*10)/10;
+  const sorted = [...v].sort((a,b)=>a-b), median = sorted[2];
+  const askMean = forceMean ? true : forceMedian ? false : Math.random()<0.5;
+  return { kind:'num',
+    pre:`${player.name}'s real hits in 5 games (2025 season):`,
+    data:v.join(', '),
+    question:`What is the ${askMean?'MEAN (average)':'MEDIAN (middle value)'}?${askMean?' Round to the nearest tenth if needed.':''}`,
+    answer: askMean?mean:median,
+    why: askMean
+      ? `Add them: ${v.join(' + ')} = ${sum}. Divide by 5 → <b>${mean}</b>.`
+      : `Line them up: ${sorted.join(', ')}. The middle one is <b>${median}</b>.` };
+}
+
 function genMeanMedian(level){
+  if(level!==3 && Math.random()<0.4){
+    if(level===1) return genMeanMedianReal(true,false);
+    if(level===2) return genMeanMedianReal(false,true);
+    return genMeanMedianReal(false,false);
+  }
   if(level===1) return genMeanOrMedian(true,false);
   if(level===2) return genMeanOrMedian(false,true);
   if(level===3) return genOutlier();
@@ -170,9 +222,21 @@ function genRangeDecimal(){
     why:`Highest = ${mx.toFixed(1)}, lowest = ${mn.toFixed(1)}. Range = ${mx.toFixed(1)} − ${mn.toFixed(1)} = <b>${range.toFixed(1)}</b>.` };
 }
 
+function genRangeReal(){
+  const { player, window } = pickRealWindow(5);
+  const v = window.map(g => g.hits);
+  const mx = Math.max(...v), mn = Math.min(...v);
+  return { kind:'num',
+    pre:`${player.name}'s real hits in 5 games (2025 season):`,
+    data:v.join(', '),
+    question:`What is the RANGE (highest − lowest)?`,
+    answer:mx-mn,
+    why:`Highest = ${mx}, lowest = ${mn}. Range = ${mx} − ${mn} = <b>${mx-mn}</b>.` };
+}
+
 function genSpread(level){
-  if(level===1) return genRangeWhole(2,10);
-  if(level===2) return genRangeWhole(2,30);
+  if(level===1) return Math.random()<0.4 ? genRangeReal() : genRangeWhole(2,10);
+  if(level===2) return Math.random()<0.4 ? genRangeReal() : genRangeWhole(2,30);
   return genRangeDecimal();
 }
 

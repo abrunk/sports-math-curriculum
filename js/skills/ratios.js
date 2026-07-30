@@ -70,6 +70,16 @@ function genRatioTotalBare(rMax, scaleMax){
   return { kind:'num', question:`The ratio of A to B is ${bn}:${bd}. If A = ${totalA}, what is A + B?`, answer:total,
     why:`${totalA} ÷ ${bn} = ${scale}. B = ${bd} × ${scale} = ${totalB}. A + B = <b>${total}</b>.` };
 }
+function genRatioRealWord(){
+  const t = rnd(MLB_DATA.teams);
+  const [an,ab] = reduceFrac(t.wins, t.losses);
+  return { kind:'ratio',
+    pre:`In the 2025 season, the ${t.name} finished ${t.wins}-${t.losses}.`,
+    question:`What is their win-loss ratio, in simplest form?`,
+    answer:[an,ab],
+    why:`${t.wins}:${t.losses} reduces to <b>${an}:${ab}</b> (divide both sides by ${gcd(t.wins,t.losses)}).` };
+}
+
 function genRatiosWord(level){
   if(level===1) return genRatioExpressWord();
   if(level===2) return genRatioScaleWord();
@@ -82,7 +92,10 @@ function genRatiosBare(level){
   if(level===3) return genRatioTotalBare(7,9);
   return genRatioTotalBare(9,15);
 }
-function genRatios(level){ return Math.random()<0.5 ? genRatiosWord(level) : genRatiosBare(level); }
+function genRatios(level){
+  if(level===1 && Math.random()<0.4) return genRatioRealWord();
+  return Math.random()<0.5 ? genRatiosWord(level) : genRatiosBare(level);
+}
 
 /* ---------- Unit Rates (6.RP.A.2, 6.RP.A.3.b) ---------- */
 function genUnitRateWord(level){
@@ -130,7 +143,21 @@ function genUnitRateBare(level){
   const price = ri(2,20)/4, units=ri(3,10), total=Math.round(price*units*100)/100;
   return { kind:'num', question:`Find the unit rate: $${total.toFixed(2)} for ${units}.`, answer:price, why:`$${total.toFixed(2)} ÷ ${units} = <b>$${price.toFixed(2)}</b> per 1.` };
 }
-function genUnitRates(level){ return Math.random()<0.5 ? genUnitRateWord(level) : genUnitRateBare(level); }
+function genUnitRateRealWord(){
+  const p = rnd(MLB_DATA.players);
+  const totalHits = p.games.reduce((a,g)=>a+g.hits,0);
+  const totalAB = p.games.reduce((a,g)=>a+g.atBats,0);
+  const rate = Math.round((totalHits/totalAB)*100)/100;
+  return { kind:'num',
+    pre:`In the 2025 season, ${p.name} got ${totalHits} hits in ${totalAB} at-bats.`,
+    question:`What is that rate, as a decimal rounded to the nearest hundredth?`,
+    answer:rate,
+    why:`${totalHits} ÷ ${totalAB} = <b>${rate.toFixed(2)}</b>.` };
+}
+function genUnitRates(level){
+  if(level===4 && Math.random()<0.4) return genUnitRateRealWord();
+  return Math.random()<0.5 ? genUnitRateWord(level) : genUnitRateBare(level);
+}
 
 /* ---------- Percentages (6.RP.A.3.c) ---------- */
 const PCT_POOL = [10,20,25,40,50,60,75,80,90];
@@ -181,7 +208,21 @@ function genPercentagesBare(level){
   return { kind:'num', question:`A number goes from ${before} to ${after}. What percent ${isIncrease?'increase':'decrease'} is that?`, answer:pct,
     why:`Change = ${Math.abs(after-before)}. ${Math.abs(after-before)} ÷ ${before} = <b>${pct}%</b>.` };
 }
-function genPercentages(level){ return Math.random()<0.5 ? genPercentagesWord(level) : genPercentagesBare(level); }
+function genPercentRealWord(){
+  const p = rnd(MLB_DATA.players);
+  const totalHits = p.games.reduce((a,g)=>a+g.hits,0);
+  const totalAB = p.games.reduce((a,g)=>a+g.atBats,0);
+  const pct = Math.round((totalHits/totalAB)*100);
+  return { kind:'num',
+    pre:`In the 2025 season, ${p.name} got ${totalHits} hits in ${totalAB} at-bats.`,
+    question:`What percent of at-bats resulted in a hit? Round to the nearest whole percent.`,
+    answer:pct,
+    why:`${totalHits} ÷ ${totalAB} = ${(totalHits/totalAB).toFixed(3)} ≈ <b>${pct}%</b>.` };
+}
+function genPercentages(level){
+  if(level===2 && Math.random()<0.4) return genPercentRealWord();
+  return Math.random()<0.5 ? genPercentagesWord(level) : genPercentagesBare(level);
+}
 
 /* ---------- register ---------- */
 Object.assign(SKILLS, {

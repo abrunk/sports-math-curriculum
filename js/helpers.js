@@ -30,6 +30,14 @@ function dotPlotHTML(freq, lo, hi, light, tickFmt){
   return `<div class="dotplot${light?' light':''}">${cols}</div>`;
 }
 
+/* ---------- real MLB data sampling (data/mlb-2025.js, loaded before this) ---------- */
+function pickRealWindow(n){
+  const player = rnd(MLB_DATA.players);
+  const games = player.games;
+  const start = ri(0, Math.max(0, games.length - n));
+  return { player, window: games.slice(start, start + n) };
+}
+
 /* ---------- vertical "worksheet" stack for standard-algorithm drills ---------- */
 function stackHTML(operands, opChar){
   const rows = operands.map((n,i)=>{
