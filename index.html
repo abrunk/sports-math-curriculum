@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Stat Lab">
+<meta name="theme-color" content="#0a0e16">
+<title>Stat Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e16; --bg2:#121826; --panel:#161d2e; --line:rgba(255,255,255,.09);
+    --orange:#ff6a1a; --orange-soft:#ff8c45; --cyan:#28d6e6; --amber:#ffcf3f;
+    --green:#54e07a; --red:#ff5d5d; --text:#eef3fb; --muted:#8b99b2;
+    --display:'Anton', 'Impact', 'Arial Narrow', sans-serif;
+    --body:'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+    --rad:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:var(--body); color:var(--text); min-height:100vh;
+    background:
+      radial-gradient(1200px 520px at 50% -120px, rgba(255,106,26,.16), transparent 60%),
+      radial-gradient(900px 500px at 85% 10%, rgba(40,214,230,.08), transparent 60%),
+      var(--bg);
+    background-attachment:fixed;
+    padding:0 16px 56px; padding-bottom:calc(56px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:780px;margin:0 auto}
+
+  /* Scoreboard header */
+  header{
+    position:sticky; top:0; z-index:20; margin:0 -16px 22px; padding:14px 16px;
+    padding-top:calc(14px + env(safe-area-inset-top));
+    background:rgba(10,14,22,.86); backdrop-filter:blur(10px);
+    border-bottom:2px solid var(--orange);
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:baseline;gap:10px}
+  .brand h1{font-family:var(--display);font-weight:400;font-size:30px;letter-spacing:1.5px;margin:0;line-height:1}
+  .brand h1 .a{color:var(--orange)} .brand h1 .b{color:var(--cyan)}
+  .brand .ball{font-size:22px;line-height:1}
+  .readout{display:flex;gap:10px}
+  .led{background:#05080f;border:1px solid var(--line);border-radius:10px;padding:6px 12px;text-align:center;min-width:74px}
+  .led .lab{font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+  .led .val{font-family:var(--mono);font-weight:700;font-size:22px;line-height:1.1}
+  .led .val.score{color:var(--amber);text-shadow:0 0 12px rgba(255,207,63,.45)}
+  .led .val.streak{color:var(--green);text-shadow:0 0 12px rgba(84,224,122,.4)}
+  .reset{background:none;border:1px solid var(--line);color:var(--muted);border-radius:10px;
+    font-family:var(--body);font-size:12px;padding:6px 10px;cursor:pointer}
+  .reset:active{transform:scale(.96)}
+
+  /* Home */
+  .tagline{color:var(--muted);font-size:15px;margin:2px 2px 20px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);
+    padding:18px 18px 16px;cursor:pointer;transition:transform .14s ease,border-color .14s ease;
+    animation:rise .45s ease both;position:relative;overflow:hidden}
+  .card:hover{transform:translateY(-4px);border-color:rgba(255,106,26,.55)}
+  .card::after{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--accent,var(--orange))}
+  .card .icon{font-size:30px;line-height:1}
+  .card h2{font-family:var(--display);font-weight:400;letter-spacing:.5px;font-size:24px;margin:12px 0 4px;line-height:1.05}
+  .card .skill{color:var(--muted);font-size:14px;margin:0 0 12px;min-height:38px}
+  .card .std{font-family:var(--mono);font-size:11px;color:var(--cyan);opacity:.8}
+  .go{display:inline-block;margin-top:6px;background:var(--orange);color:#1a0a00;font-weight:800;
+    border:none;border-radius:10px;padding:9px 16px;font-family:var(--body);font-size:14px;cursor:pointer}
+  .go:active{transform:scale(.97)}
+
+  /* Concept view */
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .back{background:none;border:1px solid var(--line);color:var(--text);border-radius:10px;
+    padding:8px 12px;font-family:var(--body);font-size:14px;cursor:pointer}
+  .back:active{transform:scale(.96)}
+  .topbar h2{font-family:var(--display);font-weight:400;letter-spacing:.5px;font-size:26px;margin:0}
+  .toggle{display:inline-flex;background:#05080f;border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:18px}
+  .toggle button{border:none;background:none;color:var(--muted);font-family:var(--body);font-weight:600;
+    font-size:14px;padding:8px 20px;border-radius:9px;cursor:pointer}
+  .toggle button.on{background:var(--orange);color:#1a0a00}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);
+    padding:20px;animation:fade .35s ease both}
+  .lead{font-size:17px;line-height:1.6;margin:0 0 16px}
+  .lead b{color:var(--orange-soft)}
+  .tip{margin:16px 0 0;color:var(--muted);font-size:14px;line-height:1.5}
+  .tip b{color:var(--cyan)}
+
+  /* compare blocks (statistical questions coach) */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:4px 0}
+  .col{border-radius:12px;padding:14px;border:1px solid var(--line)}
+  .col p{font-size:16px;margin:8px 0 6px;font-weight:600}
+  .col small{color:var(--muted)}
+  .col.not{background:rgba(255,93,93,.07)} .col.yes{background:rgba(84,224,122,.08)}
+  .badge{font-family:var(--mono);font-size:11px;letter-spacing:.5px;padding:3px 8px;border-radius:6px}
+  .col.not .badge{background:rgba(255,93,93,.18);color:#ffb0b0}
+  .col.yes .badge{background:rgba(84,224,122,.18);color:#a9f4bf}
+
+  /* whiteboard worked-example box */
+  .whiteboard{background:#f6f7f4;color:#1a2230;border-radius:12px;padding:16px 18px;margin:6px 0}
+  .whiteboard .wb-title{font-weight:800;font-size:15px;margin-bottom:8px}
+  .whiteboard .wb-data{font-family:var(--mono);font-size:16px;letter-spacing:1px;margin-bottom:6px}
+  .whiteboard .wb-row{font-size:16px;margin:8px 0;line-height:1.5}
+  .whiteboard .wb-row.hot{color:#c2410c}
+  .whiteboard .wb-calc{font-family:var(--mono);font-size:15px;margin:4px 0 10px}
+  .whiteboard b{color:#c2410c}
+
+  /* dot plot */
+  .dotplot{display:flex;align-items:flex-end;gap:14px;justify-content:center;padding:14px 6px 4px;
+    background:rgba(255,255,255,.03);border-radius:12px;margin:8px 0}
+  .dotplot.light{background:transparent}
+  .dpcol{display:flex;flex-direction:column-reverse;align-items:center;gap:6px;min-height:30px}
+  .dot{width:18px;height:18px;border-radius:50%;background:var(--orange)}
+  .dotplot.light .dot{background:#d85a30}
+  .dpaxis{margin-top:8px;font-family:var(--mono);font-weight:700;font-size:15px}
+  .dotplot.light .dpaxis{color:#1a2230}
+  .dpaxisline{border-top:2px solid var(--muted);margin-top:6px;padding-top:6px}
+
+  /* play */
+  .qtext{font-size:19px;line-height:1.5;font-weight:600;margin:6px 0 18px}
+  .answers{display:flex;flex-wrap:wrap;gap:12px}
+  .opt{flex:1 1 160px;background:var(--bg2);border:1.5px solid var(--line);color:var(--text);
+    border-radius:12px;padding:16px;font-family:var(--body);font-weight:700;font-size:16px;cursor:pointer;
+    transition:transform .1s ease,border-color .12s ease,background .12s ease}
+  .opt:hover{border-color:var(--orange)} .opt:active{transform:scale(.97)}
+  .opt.right{border-color:var(--green);background:rgba(84,224,122,.14)}
+  .opt.wrong{border-color:var(--red);background:rgba(255,93,93,.14)}
+  .numrow{display:flex;gap:10px;align-items:center}
+  .numrow input{flex:1;background:var(--bg2);border:1.5px solid var(--line);color:var(--text);
+    border-radius:12px;padding:15px 16px;font-family:var(--mono);font-size:22px;font-weight:700;
+    outline:none;min-width:0}
+  .numrow input:focus{border-color:var(--orange)}
+  .check{background:var(--cyan);color:#022a2e;border:none;border-radius:12px;font-weight:800;
+    font-family:var(--body);font-size:16px;padding:15px 22px;cursor:pointer}
+  .check:active{transform:scale(.97)}
+
+  .feedback{border-radius:12px;padding:16px 18px;margin-top:16px;animation:pop .28s ease both}
+  .feedback.good{background:rgba(84,224,122,.12);border:1px solid rgba(84,224,122,.4)}
+  .feedback.bad{background:rgba(255,93,93,.10);border:1px solid rgba(255,93,93,.4)}
+  .feedback .head{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:.5px}
+  .feedback.good .head{color:var(--green)} .feedback.bad .head{color:var(--red)}
+  .feedback .why{margin-top:8px;font-size:15px;line-height:1.5;color:var(--text)}
+  .feedback .why b{color:var(--orange-soft)}
+  .next{margin-top:14px;background:var(--orange);color:#1a0a00;border:none;border-radius:12px;
+    font-weight:800;font-family:var(--body);font-size:16px;padding:14px 22px;cursor:pointer}
+  .next:active{transform:scale(.97)}
+
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+  @media (max-width:480px){
+    .compare{grid-template-columns:1fr}
+    .brand h1{font-size:26px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <span class="ball">🏀</span>
+      <h1><span class="a">STAT</span> <span class="b">LAB</span></h1>
+    </div>
+    <div class="readout">
+      <div class="led"><div class="lab">Score</div><div class="val score" id="score">0</div></div>
+      <div class="led"><div class="lab">Streak</div><div class="val streak" id="streak">0</div></div>
+      <button class="reset" data-action="reset">Reset</button>
+    </div>
+  </header>
+  <main id="app"></main>
+</div>
+
+<script>
+/* ---------- state ----------
+   Score & streak live in memory and reset on reload.
+   TO PERSIST on your deployed (GitHub Pages) version, you can:
+     load:  state.score = +(localStorage.getItem('sl_score')||0);
+     save:  inside updateScore(): localStorage.setItem('sl_score', state.score);
+   It works fine when hosted; it just can't run inside the chat preview. */
+const state = { score:0, streak:0, view:'home', concept:null, mode:'coach', problem:null, answered:false, correct:false, userAnswer:null };
+
+/* ---------- helpers ---------- */
+const PLAYERS = ["Maya","Diego","Jamal","Lena","Sofia","Marcus","Priya","Leo","Zoe","Aiden","Nina","Theo"];
+const SPORTS = [
+  {stat:"points", emoji:"🏀"},
+  {stat:"hits",   emoji:"⚾"},
+  {stat:"goals",  emoji:"⚽"},
+];
+const PRAISE = ["Swish!","Nothing but net!","Buzzer beater!","Home run!","Grand slam!","GOAL!","Top corner!","Slam dunk!","You're on fire!","Money!"];
+const rnd = a => a[Math.floor(Math.random()*a.length)];
+const ri  = (lo,hi) => Math.floor(Math.random()*(hi-lo+1))+lo;
+const esc = s => String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function dotPlotHTML(freq, lo, hi, light){
+  let cols = "";
+  for(let x=lo;x<=hi;x++){
+    let dots = "";
+    for(let i=0;i<(freq[x]||0);i++) dots += '<span class="dot"></span>';
+    cols += `<div class="dpcol">${dots}<div class="dpaxis dpaxisline">${x}</div></div>`;
+  }
+  return `<div class="dotplot${light?' light':''}">${cols}</div>`;
+}
+
+/* ---------- problem generators ---------- */
+function genStat(){
+  const p = rnd(PLAYERS), s = rnd(SPORTS);
+  const notStat = [
+    `How many ${s.stat} did ${p} get in last night's game?`,
+    `How tall is ${p}?`,
+    `What was the final score of Saturday's game?`,
+    `How old is the team's captain?`,
+    `How many ${s.stat} did the team get in the championship game?`
+  ];
+  const stat = [
+    `How many ${s.stat} does each player on the team get per game?`,
+    `How tall are the players on the team?`,
+    `How many ${s.stat} does ${p} get in a typical game?`,
+    `How many ${s.stat} do players score in each game this season?`,
+    `What are the ages of the players on the team?`
+  ];
+  const isStat = Math.random() < 0.5;
+  return { kind:'bool', question: isStat?rnd(stat):rnd(notStat), answer:isStat,
+    why: isStat
+      ? "It's about a <b>group</b>, and the answers will be different for different players or games."
+      : "There's only <b>one answer</b>, so nothing varies." };
+}
+
+function genDotPlot(){
+  const p = rnd(PLAYERS), s = rnd(SPORTS);
+  const n = ri(8,12), lo = 0, hi = ri(4,6);
+  const vals = Array.from({length:n}, ()=>ri(lo,hi));
+  const freq = {}; for(let x=lo;x<=hi;x++) freq[x]=0; vals.forEach(v=>freq[v]++);
+  const mx = Math.max(...vals), mn = Math.min(...vals);
+  const sub = rnd(['mode','range','count','total']);
+  let question, answer, why;
+  if(sub==='mode'){
+    let best=lo, bc=-1; for(let x=lo;x<=hi;x++){ if(freq[x]>bc){bc=freq[x];best=x;} }
+    const ties = Object.keys(freq).filter(k=>freq[k]===bc);
+    if(ties.length>1){ question=`How many games are shown in total?`; answer=n; why=`Count every dot: <b>${n}</b>.`; }
+    else { question=`Which number of ${s.stat} happened most often (the tallest stack)?`; answer=best; why=`${best} ${s.stat} happened ${bc} times — the tallest stack.`; }
+  } else if(sub==='range'){
+    question=`What is the range (highest \u2212 lowest)?`; answer=mx-mn; why=`Highest ${mx}, lowest ${mn}. Range = ${mx} \u2212 ${mn} = <b>${mx-mn}</b>.`;
+  } else if(sub==='count'){
+    const thr=ri(mn+1,mx); const c=vals.filter(v=>v>=thr).length;
+    question=`In how many games did ${p} get AT LEAST ${thr} ${s.stat}?`; answer=c; why=`Count every dot at ${thr} or higher: <b>${c}</b>.`;
+  } else {
+    question=`How many games are shown in total?`; answer=n; why=`Count every dot: <b>${n}</b>.`;
+  }
+  return { kind:'num', dotplot:dotPlotHTML(freq,lo,hi,false), pre:`${p}'s ${s.stat}, game by game:`, question, answer, why };
+}
+
+function genMeanMedian(){
+  const p = rnd(PLAYERS), s = rnd(SPORTS);
+  let v; do{ v = Array.from({length:5},()=>ri(4,16)); } while(v.reduce((a,b)=>a+b,0)%5!==0);
+  const sum = v.reduce((a,b)=>a+b,0), mean = sum/5;
+  const sorted = [...v].sort((a,b)=>a-b), median = sorted[2];
+  const askMean = Math.random()<0.5;
+  return { kind:'num',
+    pre:`${p}'s ${s.stat} in 5 games:`,
+    data:v.join(', '),
+    question:`What is the ${askMean?'MEAN (average)':'MEDIAN (middle value)'}?`,
+    answer: askMean?mean:median,
+    why: askMean
+      ? `Add them: ${v.join(' + ')} = ${sum}. Divide by 5 \u2192 <b>${mean}</b>.`
+      : `Line them up: ${sorted.join(', ')}. The middle one is <b>${median}</b>.` };
+}
+
+function genOutlier(){
+  const p = rnd(PLAYERS), s = rnd(SPORTS);
+  const base = Array.from({length:4},()=>ri(6,12));
+  const out = ri(30,45);
+  const v = [...base,out].sort(()=>Math.random()-0.5);
+  const sum = v.reduce((a,b)=>a+b,0);
+  const mean = Math.round(sum/5*10)/10;
+  const median = [...v].sort((a,b)=>a-b)[2];
+  return { kind:'choice',
+    pre:`${p}'s ${s.stat} in 5 games:`,
+    data:v.join(', '),
+    question:`The mean is ${mean} and the median is ${median}. Which one better describes a TYPICAL game?`,
+    choices:[`Mean (${mean})`,`Median (${median})`],
+    answer:1,
+    why:`That one huge game (${out}) pulls the <b>mean</b> way up. The <b>median (${median})</b> stays near the normal games, so it describes a typical night better.` };
+}
+
+function genRange(){
+  const p = rnd(PLAYERS), s = rnd(SPORTS);
+  const v = Array.from({length:5},()=>ri(2,20));
+  const mx = Math.max(...v), mn = Math.min(...v);
+  return { kind:'num',
+    pre:`${p}'s ${s.stat} in 5 games:`,
+    data:v.join(', '),
+    question:`What is the RANGE (highest \u2212 lowest)?`,
+    answer:mx-mn,
+    why:`Highest = ${mx}, lowest = ${mn}. Range = ${mx} \u2212 ${mn} = <b>${mx-mn}</b>.` };
+}
+
+/* ---------- concepts ---------- */
+const CONCEPTS = {
+  stat:{
+    title:"Statistical Questions", icon:"🏀⚾⚽", accent:"#ff6a1a",
+    skill:"Tell a real data question from one with a single answer.",
+    std:"6.SP.A.1",
+    gen:genStat,
+    coach:`
+      <p class="lead">A <b>statistical question</b> is one where you expect the answers to be <b>different</b>. If there's only one possible answer, it's <b>not</b> statistical.</p>
+      <div class="compare">
+        <div class="col not"><span class="badge">NOT statistical</span><p>"How tall is Maya?"</p><small>Just one answer.</small></div>
+        <div class="col yes"><span class="badge">Statistical</span><p>"How tall are the players on the team?"</p><small>Lots of different answers.</small></div>
+      </div>
+      <p class="tip">Coach tip: statistical questions are usually about a <b>group</b>, and you expect <b>variety</b> in the answers.</p>`
+  },
+  graphs:{
+    title:"Reading Dot Plots", icon:"⚽", accent:"#28d6e6",
+    skill:"Read a dot plot: most common value, range, and counts.",
+    std:"6.SP.B.4",
+    gen:genDotPlot,
+    coach:`
+      <p class="lead">A <b>dot plot</b> stacks one dot for each value. A <b>tall stack</b> means that number happens a lot.</p>
+      <div class="whiteboard">
+        <div class="wb-title">Diego's goals in 9 games</div>
+        <div class="wb-data">1, 0, 2, 1, 1, 3, 0, 1, 2</div>
+        ${dotPlotHTML({0:2,1:4,2:2,3:1},0,3,true)}
+        <div class="wb-row">Most common: <b>1 goal</b> (tallest stack) &nbsp;\u2022&nbsp; Highest 3, lowest 0 \u2192 range = <b>3</b></div>
+      </div>
+      <p class="tip">Coach tip: have him point at the tallest stack first, then read left-to-right.</p>`
+  },
+  meanmedian:{
+    title:"Mean vs. Median", icon:"⚾", accent:"#ff6a1a",
+    skill:"Find the average and the middle value \u2014 and know which to trust.",
+    std:"6.SP.A.3",
+    gen:()=> Math.random()<0.65 ? genMeanMedian() : genOutlier(),
+    coach:`
+      <p class="lead"><b>Mean</b> = add them all, divide by how many (the average). <b>Median</b> = line them up and take the <b>middle</b> one.</p>
+      <div class="whiteboard">
+        <div class="wb-row">Normal games: <span style="font-family:var(--mono)">8, 10, 9, 11, 12</span></div>
+        <div class="wb-calc">Mean = 50 \u00f7 5 = <b>10</b> &nbsp;\u2022&nbsp; Median = <b>10</b></div>
+        <div class="wb-row hot">With one huge game: <span style="font-family:var(--mono)">8, 10, 9, 11, 40</span></div>
+        <div class="wb-calc">Mean = 78 \u00f7 5 = <b>15.6</b> &nbsp;\u2022&nbsp; Median = <b>10</b></div>
+      </div>
+      <p class="tip">Coach tip: when one game is way bigger (an <b>outlier</b>), the <b>median</b> describes a normal night better.</p>`
+  },
+  spread:{
+    title:"Spread & Range", icon:"🏀", accent:"#28d6e6",
+    skill:"Measure how spread out the numbers are: steady or streaky?",
+    std:"6.SP.A.2",
+    gen:genRange,
+    coach:`
+      <p class="lead">Two players can have the <b>same average</b> but be totally different \u2014 one steady, one streaky. <b>Range = highest \u2212 lowest</b> shows how spread out they are.</p>
+      <div class="whiteboard">
+        <div class="wb-row"><span style="font-family:var(--mono)">Player A: 10, 11, 9, 10, 10</span> \u2192 mean 10, range <b>2</b> (steady)</div>
+        <div class="wb-row"><span style="font-family:var(--mono)">Player B: 2, 18, 4, 16, 10</span> \u2192 mean 10, range <b>16</b> (streaky)</div>
+      </div>
+      <p class="tip">Coach tip: same average, but Player A is Mr. Reliable. In a close game, who do you want shooting?</p>`
+  }
+};
+
+/* ---------- rendering ---------- */
+const app = document.getElementById('app');
+function setLeds(){ document.getElementById('score').textContent=state.score; document.getElementById('streak').textContent=state.streak; }
+
+function render(){
+  setLeds();
+  if(state.view==='home'){ renderHome(); return; }
+  renderConcept();
+}
+
+function renderHome(){
+  const cards = Object.entries(CONCEPTS).map(([key,c],i)=>`
+    <div class="card" style="--accent:${c.accent};animation-delay:${i*0.06}s" data-action="open" data-concept="${key}">
+      <div class="icon">${c.icon}</div>
+      <h2>${c.title}</h2>
+      <p class="skill">${c.skill}</p>
+      <div class="std">Illinois / Common Core \u00b7 ${c.std}</div>
+      <button class="go" data-action="open" data-concept="${key}">Start \u2192</button>
+    </div>`).join('');
+  app.innerHTML = `
+    <p class="tagline">Pick a skill. <b style="color:var(--orange-soft)">Coach</b> mode explains it; <b style="color:var(--cyan)">Play</b> mode gives endless practice.</p>
+    <div class="grid">${cards}</div>`;
+}
+
+function renderConcept(){
+  const c = CONCEPTS[state.concept];
+  const body = state.mode==='coach' ? `<div class="panel">${c.coach}</div>` : renderPlay(c);
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" data-action="home">\u2190 All skills</button>
+      <h2>${c.title}</h2>
+    </div>
+    <div class="toggle">
+      <button class="${state.mode==='coach'?'on':''}" data-action="mode" data-mode="coach">Coach</button>
+      <button class="${state.mode==='play'?'on':''}" data-action="mode" data-mode="play">Play</button>
+    </div>
+    ${body}`;
+}
+
+function renderPlay(c){
+  if(!state.problem){ state.problem = c.gen(); state.answered=false; }
+  const p = state.problem;
+  const head = `
+    ${p.pre?`<div style="color:var(--muted);font-size:14px;margin-bottom:4px">${esc(p.pre)}</div>`:''}
+    ${p.data?`<div style="font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:1px;margin-bottom:12px">${esc(p.data)}</div>`:''}
+    ${p.dotplot?p.dotplot:''}
+    <div class="qtext">${esc(p.question)}</div>`;
+
+  let controls;
+  if(state.answered){
+    controls = feedbackHTML(p);
+  } else if(p.kind==='bool'){
+    controls = `<div class="answers">
+      <button class="opt" data-action="ans-bool" data-val="true">Statistical</button>
+      <button class="opt" data-action="ans-bool" data-val="false">Not statistical</button>
+    </div>`;
+  } else if(p.kind==='choice'){
+    controls = `<div class="answers">${p.choices.map((ch,i)=>`<button class="opt" data-action="ans-choice" data-idx="${i}">${esc(ch)}</button>`).join('')}</div>`;
+  } else {
+    controls = `<div class="numrow">
+      <input id="numInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Type your answer">
+      <button class="check" data-action="check">Check</button>
+    </div>`;
+  }
+  return `<div class="panel">${head}${controls}</div>`;
+}
+
+function feedbackHTML(p){
+  let optsBack = "";
+  if(p.kind==='bool'){
+    const yourRight = state.correct;
+    optsBack = `<div class="answers" style="margin-bottom:4px">
+      <button class="opt ${p.answer?'right':(state.userAnswer===true?'wrong':'')}" disabled>Statistical</button>
+      <button class="opt ${!p.answer?'right':(state.userAnswer===false?'wrong':'')}" disabled>Not statistical</button>
+    </div>`;
+  } else if(p.kind==='choice'){
+    optsBack = `<div class="answers" style="margin-bottom:4px">${p.choices.map((ch,i)=>{
+      const cls = i===p.answer?'right':(i===state.userAnswer?'wrong':'');
+      return `<button class="opt ${cls}" disabled>${esc(ch)}</button>`;
+    }).join('')}</div>`;
+  }
+  const head = state.correct ? rnd(PRAISE) : "Not quite";
+  const lead = state.correct
+    ? `<div class="why">Why: ${p.why}</div>`
+    : `<div class="why">The answer is <b>${esc(displayAnswer(p))}</b>. ${p.why}</div>`;
+  return `${optsBack}
+    <div class="feedback ${state.correct?'good':'bad'}">
+      <div class="head">${head}</div>
+      ${lead}
+    </div>
+    <button class="next" data-action="next">Next play \u2192</button>`;
+}
+
+function displayAnswer(p){
+  if(p.kind==='bool') return p.answer?'Statistical':'Not statistical';
+  if(p.kind==='choice') return p.choices[p.answer];
+  return p.answer;
+}
+
+/* ---------- scoring & answer handling ---------- */
+function updateScore(correct){
+  state.correct = correct;
+  if(correct){ state.score++; state.streak++; }
+  else { state.streak = 0; }
+  /* TO PERSIST: localStorage.setItem('sl_score', state.score); */
+}
+
+function answer(correct){ if(state.answered) return; updateScore(correct); state.answered=true; render(); }
+
+/* ---------- events ---------- */
+document.addEventListener('click', e=>{
+  const el = e.target.closest('[data-action]'); if(!el) return;
+  const a = el.dataset.action;
+  if(a==='home'){ state.view='home'; state.concept=null; state.problem=null; state.answered=false; state.mode='coach'; render(); }
+  else if(a==='open'){ state.view='concept'; state.concept=el.dataset.concept; state.mode='coach'; state.problem=null; state.answered=false; render(); }
+  else if(a==='mode'){ state.mode=el.dataset.mode; if(state.mode==='play' && !state.problem){ /* fresh problem */ } if(state.mode==='play'){ state.problem=null; state.answered=false; } render(); }
+  else if(a==='ans-bool'){ state.userAnswer=(el.dataset.val==='true'); answer(state.userAnswer===state.problem.answer); }
+  else if(a==='ans-choice'){ const i=+el.dataset.idx; state.userAnswer=i; answer(i===state.problem.answer); }
+  else if(a==='check'){ const inp=document.getElementById('numInput'); if(!inp) return; const v=inp.value.trim(); if(v===''||isNaN(Number(v))){ inp.focus(); return; } state.userAnswer=Number(v); answer(Number(v)===state.problem.answer); }
+  else if(a==='next'){ state.problem=CONCEPTS[state.concept].gen(); state.answered=false; render(); }
+  else if(a==='reset'){ state.score=0; state.streak=0; setLeds(); }
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && state.view==='concept' && state.mode==='play' && !state.answered){
+    const inp=document.getElementById('numInput'); if(inp){ const v=inp.value.trim(); if(v!==''&&!isNaN(Number(v))){ state.userAnswer=Number(v); answer(Number(v)===state.problem.answer); } }
+  }
+});
+
+render();
+</script>
+</body>
+</html>
