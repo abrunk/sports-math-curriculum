@@ -115,6 +115,13 @@ function renderPlay(c){
       <input id="rInput" type="text" inputmode="numeric" autocomplete="off" placeholder="remainder">
       <button class="check" data-action="check-divrem">Check</button>
     </div>`;
+  } else if(p.kind==='ratio'){
+    controls = `<div class="numrow fracrow">
+      <input id="ratioAInput" type="text" inputmode="numeric" autocomplete="off" placeholder="first">
+      <span class="fracbar">:</span>
+      <input id="ratioBInput" type="text" inputmode="numeric" autocomplete="off" placeholder="second">
+      <button class="check" data-action="check-ratio">Check</button>
+    </div>`;
   } else {
     controls = `<div class="numrow">
       <input id="numInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Type your answer">
@@ -129,6 +136,7 @@ function displayAnswer(p){
   if(p.kind==='choice') return p.choices[p.answer];
   if(p.kind==='frac') return fracLabel(p.answer[0], p.answer[1]);
   if(p.kind==='divrem') return `${p.answer.q} R ${p.answer.r}`;
+  if(p.kind==='ratio') return `${p.answer[0]}:${p.answer[1]}`;
   return p.answer;
 }
 
@@ -203,6 +211,16 @@ document.addEventListener('click', e=>{
     state.userAnswer={q:uq,r:ur};
     answer(uq===state.problem.answer.q && ur===state.problem.answer.r);
   }
+  else if(a==='check-ratio'){
+    const ai=document.getElementById('ratioAInput'), bi=document.getElementById('ratioBInput');
+    if(!ai||!bi) return;
+    if(ai.value.trim()===''||bi.value.trim()===''){ (ai.value.trim()===''?ai:bi).focus(); return; }
+    const ua=Number(ai.value.trim()), ub=Number(bi.value.trim());
+    if(isNaN(ua)||isNaN(ub)||ub===0){ bi.focus(); return; }
+    state.userAnswer=[ua,ub];
+    const [aa,ab] = state.problem.answer;
+    answer(fracEq(ua,ub,aa,ab));
+  }
   else if(a==='next'){ state.problem=SKILLS[state.skill].gen(getLevel(state.skill)); state.answered=false; render(); }
   else if(a==='reset'){ state.score=0; state.streak=0; setLeds(); saveProgress(); }
 });
@@ -221,6 +239,12 @@ document.addEventListener('keydown', e=>{
     if(qi&&rin&&qi.value.trim()!==''&&rin.value.trim()!==''){
       const uq=Number(qi.value.trim()), ur=Number(rin.value.trim());
       if(!isNaN(uq)&&!isNaN(ur)){ state.userAnswer={q:uq,r:ur}; answer(uq===p.answer.q && ur===p.answer.r); }
+    }
+  } else if(p.kind==='ratio'){
+    const ai=document.getElementById('ratioAInput'), bi=document.getElementById('ratioBInput');
+    if(ai&&bi&&ai.value.trim()!==''&&bi.value.trim()!==''){
+      const ua=Number(ai.value.trim()), ub=Number(bi.value.trim());
+      if(!isNaN(ua)&&!isNaN(ub)&&ub!==0){ state.userAnswer=[ua,ub]; answer(fracEq(ua,ub,p.answer[0],p.answer[1])); }
     }
   } else if(p.kind==='num'){
     const inp=document.getElementById('numInput');
