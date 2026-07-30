@@ -6,7 +6,7 @@ const STORAGE_KEY = 'smc_progress';
 const state = {
   score:0, streak:0, levels:{},
   view:'home',
-  domain:null, skill:null, mode:'coach',
+  domain:null, skill:null, showCoach:false,
   problem:null, answered:false, correct:false, userAnswer:null
 };
 
@@ -22,6 +22,21 @@ const DOMAIN_META = {
 };
 
 function getLevel(key){ return state.levels[key] || 1; }
+
+/* Weighted pick among a domain's skills — skills further from mastery get
+   proportionally more reps, but nothing ever drops to zero chance, so a
+   maxed-out skill still resurfaces occasionally for review. */
+function pickSkillForDomain(domain){
+  const entries = Object.entries(SKILLS).filter(([,c])=>c.domain===domain);
+  const weights = entries.map(([k,c]) => c.maxLevel - getLevel(k) + 1);
+  const total = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random()*total;
+  for(let i=0;i<entries.length;i++){
+    r -= weights[i];
+    if(r<=0) return entries[i][0];
+  }
+  return entries[entries.length-1][0];
+}
 
 function loadProgress(){
   try{
@@ -46,21 +61,7 @@ function setLeds(){ document.getElementById('score').textContent=state.score; do
 function render(){
   setLeds();
   if(state.view==='home'){ renderHome(); return; }
-  if(state.view==='domain'){ renderDomainView(); return; }
-  renderSkillView();
-}
-
-function cardHTML(key,c,i){
-  const lvl = getLevel(key);
-  return `
-    <div class="card" style="--accent:${c.accent};animation-delay:${i*0.06}s" data-action="open" data-skill="${key}">
-      <div class="icon">${c.icon}</div>
-      <h2>${c.title}</h2>
-      <p class="skill">${c.skill}</p>
-      <div class="std">${esc(c.std)}</div>
-      <div class="lvl">Level ${lvl} of ${c.maxLevel}</div>
-      <button class="go" data-action="open" data-skill="${key}">Start →</button>
-    </div>`;
+  renderDomainPlay();
 }
 
 function domainCardHTML(domain,i){
@@ -72,7 +73,7 @@ function domainCardHTML(domain,i){
       <h2>${esc(domain)}</h2>
       <p class="skill">${esc(meta.desc)}</p>
       <div class="std">${count} skill${count===1?'':'s'}</div>
-      <button class="go" data-action="open-domain" data-domain="${esc(domain)}">Explore →</button>
+      <button class="go" data-action="open-domain" data-domain="${esc(domain)}">Play →</button>
     </div>`;
 }
 
@@ -80,35 +81,23 @@ function renderHome(){
   const domainNames = [...new Set(Object.values(SKILLS).map(c=>c.domain))];
   const body = `<div class="grid">${domainNames.map((d,i)=>domainCardHTML(d,i)).join('')}</div>`;
   app.innerHTML = `
-    <p class="tagline">Pick a category, then a skill. <b style="color:var(--orange-soft)">Coach</b> mode explains it; <b style="color:var(--cyan)">Play</b> mode gives endless practice that gets harder as you go.</p>
+    <p class="tagline">Pick a category and start practicing — problems adapt to get harder as you go. Tap 💡 any time to see how a skill works.</p>
     ${body}`;
 }
 
-function renderDomainView(){
-  const domain = state.domain;
-  const list = Object.entries(SKILLS).filter(([,c])=>c.domain===domain);
+function renderDomainPlay(){
+  const c = SKILLS[state.skill];
+  const lvl = getLevel(state.skill);
+  const bodyHTML = state.showCoach
+    ? `<div class="panel">${c.coach}</div><button class="next" data-action="toggle-coach">Back to practice →</button>`
+    : renderPlay(c);
   app.innerHTML = `
     <div class="topbar">
       <button class="back" data-action="home">← All categories</button>
-      <h2>${esc(domain)}</h2>
+      <h2>${esc(state.domain)}</h2>
+      <span class="lvlpill">${esc(c.title)} · Lv ${lvl}/${c.maxLevel}</span>
     </div>
-    <div class="grid">${list.map(([k,c],i)=>cardHTML(k,c,i)).join('')}</div>`;
-}
-
-function renderSkillView(){
-  const c = SKILLS[state.skill];
-  const lvl = getLevel(state.skill);
-  const bodyHTML = state.mode==='coach' ? `<div class="panel">${c.coach}</div>` : renderPlay(c);
-  app.innerHTML = `
-    <div class="topbar">
-      <button class="back" data-action="back-domain">← ${esc(c.domain)}</button>
-      <h2>${esc(c.title)}</h2>
-      <span class="lvlpill">Level ${lvl} / ${c.maxLevel}</span>
-    </div>
-    <div class="toggle">
-      <button class="${state.mode==='coach'?'on':''}" data-action="mode" data-mode="coach">Coach</button>
-      <button class="${state.mode==='play'?'on':''}" data-action="mode" data-mode="play">Play</button>
-    </div>
+    ${state.showCoach ? '' : `<button class="coachlink" data-action="toggle-coach">💡 ${esc(c.title)} — how this works</button>`}
     ${bodyHTML}`;
 }
 
@@ -220,11 +209,14 @@ function answer(correct){ if(state.answered) return; updateResult(correct); stat
 document.addEventListener('click', e=>{
   const el = e.target.closest('[data-action]'); if(!el) return;
   const a = el.dataset.action;
-  if(a==='home'){ state.view='home'; state.domain=null; state.skill=null; state.problem=null; state.answered=false; state.mode='coach'; render(); }
-  else if(a==='open-domain'){ state.view='domain'; state.domain=el.dataset.domain; render(); }
-  else if(a==='back-domain'){ state.view='domain'; state.skill=null; state.problem=null; state.answered=false; state.mode='coach'; render(); }
-  else if(a==='open'){ state.view='skill'; state.skill=el.dataset.skill; state.mode='coach'; state.problem=null; state.answered=false; render(); }
-  else if(a==='mode'){ state.mode=el.dataset.mode; state.problem=null; state.answered=false; render(); }
+  if(a==='home'){ state.view='home'; state.domain=null; state.skill=null; state.problem=null; state.answered=false; state.showCoach=false; render(); }
+  else if(a==='open-domain'){
+    state.view='play'; state.domain=el.dataset.domain;
+    state.skill=pickSkillForDomain(state.domain);
+    state.problem=null; state.answered=false; state.showCoach=false;
+    render();
+  }
+  else if(a==='toggle-coach'){ state.showCoach=!state.showCoach; render(); }
   else if(a==='ans-bool'){ state.userAnswer=(el.dataset.val==='true'); answer(state.userAnswer===state.problem.answer); }
   else if(a==='ans-choice'){ const i=+el.dataset.idx; state.userAnswer=i; answer(i===state.problem.answer); }
   else if(a==='check'){
@@ -272,12 +264,17 @@ document.addEventListener('click', e=>{
     const [ax,ay] = state.problem.answer;
     answer(ux===ax && uy===ay);
   }
-  else if(a==='next'){ state.problem=SKILLS[state.skill].gen(getLevel(state.skill)); state.answered=false; render(); }
+  else if(a==='next'){
+    state.skill=pickSkillForDomain(state.domain);
+    state.problem=SKILLS[state.skill].gen(getLevel(state.skill));
+    state.answered=false; state.showCoach=false;
+    render();
+  }
   else if(a==='reset'){ state.score=0; state.streak=0; setLeds(); saveProgress(); }
 });
 
 document.addEventListener('keydown', e=>{
-  if(e.key!=='Enter' || state.view!=='skill' || state.mode!=='play' || state.answered) return;
+  if(e.key!=='Enter' || state.view!=='play' || state.showCoach || state.answered) return;
   const p = state.problem; if(!p) return;
   if(p.kind==='frac'){
     const ni=document.getElementById('numInput'), di=document.getElementById('denInput');
