@@ -146,11 +146,17 @@ Object.assign(SKILLS, {
     std:"5.NF", maxLevel:4,
     gen:genFractionOps,
     coach:`
-      <p class="lead">Same denominator? Just add or subtract the tops. <b>Different</b> denominators? Find a common one first. To <b>multiply</b> a whole number by a fraction, split the whole into that many equal parts. To <b>divide</b> a fraction, split it into even smaller pieces.</p>
+      <p class="lead">Fractions with the <b>same denominator</b> are already talking about equal-sized pieces, so you can add or subtract the top numbers directly and leave the bottom alone. When the denominators are <b>different</b>, the pieces are different sizes — you have to rewrite both fractions using a shared, common denominator before you can combine them at all.</p>
       <div class="whiteboard">
-        <div class="wb-row">Same bottom: <span style="font-family:var(--mono)">2/8 + 3/8 = 5/8</span></div>
-        <div class="wb-row">Different bottoms: <span style="font-family:var(--mono)">1/2 + 1/3</span> → common denominator 6 → <span style="font-family:var(--mono)">3/6 + 2/6 = 5/6</span></div>
-        <div class="wb-row">Multiply: <span style="font-family:var(--mono)">3/4 of 20 = 15</span> &nbsp;•&nbsp; Divide: <span style="font-family:var(--mono)">3/4 ÷ 3 = 3/12 = 1/4</span></div>
+        <div class="wb-row">Same bottom (free throws): <span style="font-family:var(--mono)">2/8 + 3/8 = 5/8</span> of attempts made</div>
+        <div class="wb-row">Same bottom, subtracting (goals): <span style="font-family:var(--mono)">5/6 − 2/6 = 3/6 = 1/2</span></div>
+        <div class="wb-row">Different bottoms (distance run): <span style="font-family:var(--mono)">1/2 + 1/3</span> → common denominator 6 → <span style="font-family:var(--mono)">3/6 + 2/6 = 5/6</span> mile</div>
+      </div>
+      <p class="lead">To <b>multiply</b> a whole number by a fraction, split the whole into that many equal parts and take however many the numerator says. To <b>divide</b> a fraction by a whole number, split it into even smaller pieces — the denominator gets bigger, not smaller.</p>
+      <div class="whiteboard">
+        <div class="wb-row">Multiply (shots made): <span style="font-family:var(--mono)">3/4 of 20 shots = 15</span> makes</div>
+        <div class="wb-row">Multiply (season wins): <span style="font-family:var(--mono)">2/3 of 18 games = 12</span> wins</div>
+        <div class="wb-row">Divide (practice time): <span style="font-family:var(--mono)">3/4 hour ÷ 3 drills = 3/12 = 1/4</span> hour each</div>
       </div>
       <p class="tip">Coach tip: enter answers as a fraction — top number, then bottom number. Any equivalent fraction counts as correct.</p>`
   }

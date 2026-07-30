@@ -208,27 +208,47 @@ Object.assign(SKILLS, {
     domain:'Number Fluency',
     skill:"Standard-algorithm addition and subtraction, from single digits up to 4-digit numbers.",
     std:"4.NBT.B.4", maxLevel:4, gen:genAddSub,
-    coach:`<p class="lead">Line up the digits by place value. Add (or subtract) each column starting from the ones place. When a column adds to 10 or more, <b>carry</b> the 1. When the top digit is smaller than the bottom digit, <b>borrow</b> from the column to its left.</p>`
+    coach:`<p class="lead">The standard algorithm works because of <b>place value</b> — ones only combine with ones, tens with tens, and so on. Line up the numbers so matching place values sit in the same column, then work from the <b>ones place</b> outward. If a column adds up to 10 or more, write down the ones digit and <b>carry</b> the extra 1 into the next column. If the top digit in a column is smaller than the bottom digit, <b>borrow</b> 1 from the column to its left before subtracting.</p>
+      <div class="whiteboard">
+        <div class="wb-row">Ticket sales: <span style="font-family:var(--mono)">1,847 + 956 = 2,803</span> (carry twice)</div>
+        <div class="wb-row">Seats remaining: <span style="font-family:var(--mono)">5,000 − 3,214 = 1,786</span> (borrow across zeros)</div>
+      </div>
+      <p class="tip">Coach tip: writing the numbers in a neat vertical stack — one digit per column — makes it much harder to line things up wrong.</p>`
   },
   multiply:{
     title:"Multi-Digit Multiplication", icon:"✖️", accent:"#28d6e6",
     domain:'Number Fluency',
     skill:"Times tables up through multi-digit standard-algorithm multiplication.",
     std:"5.NBT.B.5", maxLevel:4, gen:genMul,
-    coach:`<p class="lead">Multiply the top number by each digit of the bottom number, one at a time, shifting each partial product one place to the left. Add all the partial products together for the final answer.</p>`
+    coach:`<p class="lead">Multi-digit multiplication is really the <b>distributive property</b> in disguise: break the bottom number into its place values (like 23 = 20 + 3), multiply the top number by each piece separately, then add those <b>partial products</b> together. Shifting each partial product one place to the left accounts for the fact that a tens digit is worth ten times as much as a ones digit.</p>
+      <div class="whiteboard">
+        <div class="wb-row">Seats per section: <span style="font-family:var(--mono)">34 × 6 = 204</span></div>
+        <div class="wb-row">Full stadium: <span style="font-family:var(--mono)">247 × 32 = 7,904</span></div>
+      </div>
+      <p class="tip">Coach tip: estimate first (34 × 6 is close to 30 × 6 = 180) — it catches a lot of place-value mistakes before you even check your work.</p>`
   },
   longdivision:{
     title:"Long Division", icon:"➗", accent:"#ffcf3f",
     domain:'Number Fluency',
     skill:"Long division, including remainders.",
     std:"5.NBT.B.6", maxLevel:4, gen:genDiv,
-    coach:`<p class="lead">Figure out how many times the divisor fits into the leading digits, multiply, subtract, bring down the next digit, and repeat. Whatever's left over at the very end is the <b>remainder</b>.</p>`
+    coach:`<p class="lead">Long division answers one question over and over: "how many times does the divisor fit?" Start with the leftmost digits of the dividend, find the biggest multiple of the divisor that fits, subtract it, bring down the next digit, and repeat. Whatever's left over at the very end — smaller than the divisor — is the <b>remainder</b>.</p>
+      <div class="whiteboard">
+        <div class="wb-row">Points split evenly: <span style="font-family:var(--mono)">96 ÷ 8 = 12</span> per game</div>
+        <div class="wb-row">Uneven split: <span style="font-family:var(--mono)">100 ÷ 8 = 12</span> R <span style="font-family:var(--mono)">4</span></div>
+      </div>
+      <p class="tip">Coach tip: check your work by multiplying the quotient back by the divisor and adding the remainder — it should land you right back on the original number.</p>`
   },
   decimalops:{
     title:"Decimal Operations", icon:"🔟", accent:"#8b99b2",
     domain:'Number Fluency',
     skill:"Decimal add/subtract/multiply/divide, standard algorithm.",
     std:"5.NBT.B.7", maxLevel:4, gen:genDec,
-    coach:`<p class="lead">Line up the decimal points before adding or subtracting — pad with a trailing zero if the numbers have different numbers of decimal places. For multiplying, ignore the decimal points, multiply as whole numbers, then count the total decimal places to place the point in your answer.</p>`
+    coach:`<p class="lead">Decimals follow the same place-value rules as whole numbers — the decimal point just marks where the ones place ends. For <b>adding or subtracting</b>, line up the decimal points so matching places stay together (pad with a trailing zero if one number has fewer decimal places). For <b>multiplying</b>, ignore the decimal points completely, multiply as if they were whole numbers, then count the total decimal places in both factors to know where the point goes in your answer.</p>
+      <div class="whiteboard">
+        <div class="wb-row">Race times: <span style="font-family:var(--mono)">12.45 + 9.8 = 22.25</span> seconds</div>
+        <div class="wb-row">Total distance: <span style="font-family:var(--mono)">3.2 × 4 = 12.8</span> miles</div>
+      </div>
+      <p class="tip">Coach tip: for multiplication, count decimal places in the PROBLEM, not the answer — 3.2 has one decimal place, so the answer needs exactly one.</p>`
   }
 });

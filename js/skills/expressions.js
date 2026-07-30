@@ -125,10 +125,11 @@ Object.assign(SKILLS, {
     domain:'Expressions & Equations',
     skill:"Evaluate expressions with parentheses and exponents in the right order.",
     std:"5.OA.A.1 → 6.EE.A.1", maxLevel:4, gen:genOrderOfOps,
-    coach:`<p class="lead">Do the math inside <b>parentheses</b> first, then <b>exponents</b>, then <b>multiply/divide</b> left to right, then <b>add/subtract</b> left to right (PEMDAS).</p>
+    coach:`<p class="lead">Order of operations is just a shared set of rules mathematicians agree to follow so everyone gets the <b>same answer</b> from the same expression. Without an agreed order, "3 + 4 × 2" could mean 14 or 11 depending on who you ask! The agreed order is: <b>parentheses</b> first, then <b>exponents</b>, then <b>multiply/divide</b> left to right, then <b>add/subtract</b> left to right (PEMDAS).</p>
       <div class="whiteboard">
         <div class="wb-row">(3 + 4) × 2 → parentheses first: 7 × 2 = <b>14</b></div>
         <div class="wb-row">3² + 4 × 2 → exponent first: 9, then multiply: 8, then add: <b>17</b></div>
+        <div class="wb-row">20 − 2 × 6 → multiply first: 12, then subtract: 20 − 12 = <b>8</b></div>
       </div>
       <p class="tip">Coach tip: doing the steps out of order is the #1 mistake here — always parentheses first, no matter what.</p>`
   },
@@ -137,9 +138,10 @@ Object.assign(SKILLS, {
     domain:'Expressions & Equations',
     skill:"Evaluate expressions with a variable, and find equivalent expressions.",
     std:"6.EE.A.2, 6.EE.A.3, 6.EE.A.4", maxLevel:4, gen:genVariableExpr,
-    coach:`<p class="lead">A variable like x stands for a number you plug in. To evaluate, substitute the value for x and follow order of operations. The <b>distributive property</b> lets you rewrite a(x + b) as ax + ab — same value, different form.</p>
+    coach:`<p class="lead">A variable like <b>x</b> is just a placeholder for a number you don't know yet — or a number that changes depending on the situation, like how many points a player scored. To <b>evaluate</b> an expression, substitute the actual value in for x and then follow the normal order of operations. The <b>distributive property</b> lets you rewrite a(x + b) as ax + ab — the same value written two different ways, which is handy for simplifying or for checking your work a second way.</p>
       <div class="whiteboard">
         <div class="wb-row">If x = 5: 3x + 2 = 3×5 + 2 = <b>17</b></div>
+        <div class="wb-row">If x = 8 points, earnings = 4x + 10: 4×8 + 10 = <b>42</b></div>
         <div class="wb-row">4(x + 3) distributes to <b>4x + 12</b></div>
       </div>
       <p class="tip">Coach tip: substitute first, multiply/divide before add/subtract — same order of operations rules apply.</p>`
@@ -149,9 +151,10 @@ Object.assign(SKILLS, {
     domain:'Expressions & Equations',
     skill:"Solve for x in one-step addition, subtraction, and multiplication equations.",
     std:"6.EE.B.5, 6.EE.B.6, 6.EE.B.7", maxLevel:4, gen:genEquations,
-    coach:`<p class="lead">Solving an equation means finding the value of x that makes it true. Whatever operation is being done to x, do the <b>opposite</b> to undo it: if something is added, subtract; if something is multiplied, divide.</p>
+    coach:`<p class="lead">Solving an equation means finding the exact value of x that makes both sides equal. The trick is to <b>undo</b> whatever is being done to x, using the opposite operation — undo addition with subtraction, undo subtraction with addition, undo multiplication with division. Whatever you do to one side of the equation, you have to do to the other side too, so it stays balanced.</p>
       <div class="whiteboard">
         <div class="wb-row">x + 7 = 12 → subtract 7 from both sides → x = <b>5</b></div>
+        <div class="wb-row">x − 9 = 14 → add 9 to both sides → x = <b>23</b></div>
         <div class="wb-row">4x = 20 → divide both sides by 4 → x = <b>5</b></div>
       </div>
       <p class="tip">Coach tip: whatever you do to one side of the equation, you have to do to the other side too.</p>`

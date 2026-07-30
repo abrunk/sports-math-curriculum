@@ -282,9 +282,10 @@ Object.assign(SKILLS, {
     domain:'Ratios & Rates',
     skill:"Express, simplify, and scale ratios using team and player stats.",
     std:"6.RP.A.1, 6.RP.A.3.a", maxLevel:4, gen:genRatios,
-    coach:`<p class="lead">A <b>ratio</b> compares two quantities, written A:B. You can simplify a ratio the same way you simplify a fraction — divide both sides by their greatest common factor. Ratios also <b>scale</b>: if you know the ratio and one quantity, you can find the other by figuring out the scale factor first.</p>
+    coach:`<p class="lead">A <b>ratio</b> compares two quantities and keeps their relationship the same even when the actual numbers change. You simplify a ratio exactly like a fraction — divide both sides by their greatest common factor. Ratios also <b>scale</b>: if you know the ratio between two things and the real value of one of them, you can find the scale factor and use it to find the other.</p>
       <div class="whiteboard">
         <div class="wb-row">Simplify: <span style="font-family:var(--mono)">8:12 = 2:3</span> (divide both by 4)</div>
+        <div class="wb-row">Simplify: <span style="font-family:var(--mono)">15:25 = 3:5</span> (divide both by 5)</div>
         <div class="wb-row">Scale: ratio 2:3, if the "3" side is 15, scale factor = 15÷3 = 5, so the "2" side = 2×5 = <b>10</b></div>
       </div>
       <p class="tip">Coach tip: enter ratio answers as two numbers separated by a colon, just like the notation.</p>`
@@ -294,9 +295,10 @@ Object.assign(SKILLS, {
     domain:'Ratios & Rates',
     skill:"Find and compare rates: points per game, cost per ticket, and more.",
     std:"6.RP.A.2, 6.RP.A.3.b", maxLevel:4, gen:genUnitRates,
-    coach:`<p class="lead">A <b>unit rate</b> tells you how much of something happens for just <b>one</b> of something else — points per game, dollars per ticket. Find it by dividing the total by the number of units.</p>
+    coach:`<p class="lead">A <b>unit rate</b> tells you how much of something happens for just <b>one</b> of something else — points per game, dollars per ticket, miles per hour. It's what makes two different-sized situations comparable: 36 points in 4 games and 45 points in 5 games both come out to the same 9 points per game. Find any unit rate by dividing the total by the number of units.</p>
       <div class="whiteboard">
         <div class="wb-row">36 points in 4 games → 36 ÷ 4 = <b>9</b> points per game</div>
+        <div class="wb-row">$45 for 9 tickets → 45 ÷ 9 = <b>$5</b> per ticket</div>
         <div class="wb-row">To compare two rates, find both unit rates and see which is bigger.</div>
       </div>
       <p class="tip">Coach tip: the "per" in "points per game" is always a clue to divide.</p>`
@@ -306,11 +308,12 @@ Object.assign(SKILLS, {
     domain:'Ratios & Rates',
     skill:"Find a percent of a number, what percent one number is of another, and percent change.",
     std:"6.RP.A.3.c", maxLevel:4, gen:genPercentages,
-    coach:`<p class="lead">A percent is just a ratio out of 100. To find a percent of a number, turn the percent into a fraction over 100 and multiply. To find what percent one number is of another, divide and read it as a percent.</p>
+    coach:`<p class="lead">A percent is just a special ratio — always out of <b>100</b>. That common base is what makes percents easy to compare, even when the actual totals are totally different sizes (75% of 20 free throws and 75% of 200 free throws both mean "three out of every four"). To find a percent <b>of</b> a number, turn the percent into a fraction over 100 and multiply. To find what percent one number <b>is</b> of another, divide the part by the whole and read the decimal as a percent.</p>
       <div class="whiteboard">
-        <div class="wb-row">75% of 20 = 75/100 × 20 = <b>15</b></div>
-        <div class="wb-row">15 out of 20 = 15 ÷ 20 = 0.75 = <b>75%</b></div>
+        <div class="wb-row">75% of 20 free throws = 75/100 × 20 = <b>15</b> makes</div>
+        <div class="wb-row">15 makes out of 20 attempts = 15 ÷ 20 = 0.75 = <b>75%</b></div>
+        <div class="wb-row">Percent change = (change ÷ original amount), turned into a percent</div>
       </div>
-      <p class="tip">Coach tip: percent change = (change ÷ original amount), turned into a percent.</p>`
+      <p class="tip">Coach tip: "what percent OF" means multiply; "what percent IS" means divide.</p>`
   }
 });

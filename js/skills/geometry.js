@@ -163,10 +163,11 @@ Object.assign(SKILLS, {
     domain:'Geometry',
     skill:"Plot and read points, find distances, and reflect points on a shot chart.",
     std:"5.G.A.1, 5.G.A.2, 6.G.A.3", maxLevel:4, gen:genCoordinatePlane,
-    coach:`<p class="lead">A point on the coordinate plane is written (x, y): x is how far right, y is how far up from the origin (0,0). If two points share an x or y coordinate, the distance between them is just the difference of the other coordinate.</p>
+    coach:`<p class="lead">Every point on the coordinate plane is written (x, y): <b>x</b> tells you how far to move right (or left, if negative) from the origin (0,0), and <b>y</b> tells you how far to move up (or down). If two points share the same x-coordinate, they're stacked directly above and below each other, so the distance between them is just the difference of their y-coordinates — the same idea works sideways when two points share a y-coordinate.</p>
       <div class="whiteboard">
         <div class="wb-row">3 right, 4 up from the hoop → <b>(3, 4)</b></div>
         <div class="wb-row">(2, 0) and (2, 6) share an x → distance = |6 − 0| = <b>6</b></div>
+        <div class="wb-row">A field with corners (0,0), (8,0), (8,5), (0,5) has width 8 and height 5 → area = <b>40</b></div>
         <div class="wb-row">Reflecting (4, 3) across the y-axis flips left/right → <b>(−4, 3)</b></div>
       </div>
       <p class="tip">Coach tip: enter coordinate answers as x, then y — negative numbers are allowed, just type the minus sign.</p>`
@@ -176,10 +177,11 @@ Object.assign(SKILLS, {
     domain:'Geometry',
     skill:"Find the area of rectangles, triangles, parallelograms, and combined shapes.",
     std:"6.G.A.1", maxLevel:4, gen:genAreaShapes,
-    coach:`<p class="lead">Rectangle area = length × width. A triangle is half of that same rectangle, so triangle area = (base × height) ÷ 2. A parallelogram has the same area formula as a rectangle: base × height. For an oddly-shaped field, split it into rectangles you already know how to handle, then add or subtract.</p>
+    coach:`<p class="lead">Area measures how much surface a shape covers, in square units. Rectangle area = length × width. A right triangle is exactly <b>half</b> of a rectangle built around it, so triangle area = (base × height) ÷ 2 — that division by 2 is the single most common thing to forget. A parallelogram, once you slide the extra triangle off one end onto the other, becomes that same rectangle shape — same formula: base × height. For an oddly-shaped field, split it into rectangles and triangles you already know how to handle, then add or subtract their areas.</p>
       <div class="whiteboard">
         <div class="wb-row">Rectangle 10 × 6 = <b>60</b></div>
         <div class="wb-row">Triangle, base 10 height 6 → (10 × 6) ÷ 2 = <b>30</b></div>
+        <div class="wb-row">Parallelogram, base 12 height 5 → 12 × 5 = <b>60</b></div>
         <div class="wb-row">L-shape: big rectangle minus the missing corner</div>
       </div>
       <p class="tip">Coach tip: always double-check whether you need to divide by 2 — that's the #1 triangle mistake.</p>`
@@ -189,9 +191,10 @@ Object.assign(SKILLS, {
     domain:'Geometry',
     skill:"Find the volume and surface area of boxes and equipment crates.",
     std:"6.G.A.2, 6.G.A.4", maxLevel:4, gen:genVolumeSurfaceArea,
-    coach:`<p class="lead">Volume of a box = length × width × height — how much space is inside. Surface area is how much material covers the <b>outside</b>: add up the area of all 6 faces (there are 3 pairs of matching faces).</p>
+    coach:`<p class="lead">Volume measures how much <b>space</b> is inside a box, in cubic units: length × width × height. Surface area measures how much material it takes to <b>wrap</b> the outside — a rectangular box has 6 faces in 3 matching pairs (top/bottom, front/back, left/right), so you find the area of one face from each pair, add those three together, then double it.</p>
       <div class="whiteboard">
         <div class="wb-row">Volume: 4 × 3 × 2 = <b>24</b> cubic feet</div>
+        <div class="wb-row">Volume with a fractional edge: 4 × 3 × 2.5 = <b>30</b> cubic feet</div>
         <div class="wb-row">Surface area: 2(lw + lh + wh) = 2(12 + 8 + 6) = <b>52</b> square feet</div>
       </div>
       <p class="tip">Coach tip: volume can have fractional/decimal edge lengths — the multiplication works the same way.</p>`
