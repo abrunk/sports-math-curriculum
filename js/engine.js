@@ -6,7 +6,7 @@ const STORAGE_KEY = 'smc_progress';
 const state = {
   score:0, streak:0, levels:{},
   view:'home',
-  domain:null, skill:null,
+  domain:null, skill:null, scenarioKey:null,
   problem:null, answered:false, correct:false, userAnswer:null
 };
 
@@ -29,6 +29,21 @@ function getLevel(key){ return state.levels[key] || 1; }
 function pickSkillForDomain(domain){
   const entries = Object.entries(SKILLS).filter(([,c])=>c.domain===domain);
   const weights = entries.map(([k,c]) => c.maxLevel - getLevel(k) + 1);
+  const total = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random()*total;
+  for(let i=0;i<entries.length;i++){
+    r -= weights[i];
+    if(r<=0) return entries[i][0];
+  }
+  return entries[entries.length-1][0];
+}
+
+/* Weighted pick among Coach Mode's scenarios — same formula as
+   pickSkillForDomain, keyed under 'coach_'+id in state.levels so it can
+   never collide with a skill id. */
+function pickScenario(){
+  const entries = Object.entries(SCENARIOS);
+  const weights = entries.map(([k,c]) => c.maxLevel - getLevel('coach_'+k) + 1);
   const total = weights.reduce((a,b)=>a+b,0);
   let r = Math.random()*total;
   for(let i=0;i<entries.length;i++){
@@ -62,6 +77,7 @@ function render(){
   setLeds();
   if(state.view==='home'){ renderHome(); return; }
   if(state.view==='learn'){ renderLearnView(); return; }
+  if(state.view==='coach'){ renderCoachPlay(); return; }
   renderDomainPlay();
 }
 
@@ -86,7 +102,15 @@ function renderHome(){
   const body = `<div class="grid">${domainNames.map((d,i)=>domainCardHTML(d,i)).join('')}</div>`;
   app.innerHTML = `
     <p class="tagline">Pick a category. <b style="color:var(--cyan)">Learn</b> walks through how it works; <b style="color:var(--orange-soft)">Play</b> jumps straight into practice that adapts to get harder as you go.</p>
-    ${body}`;
+    ${body}
+    <button class="coachbanner" data-action="open-coach">
+      <div class="icon">🏀</div>
+      <div class="body">
+        <h2>Coach Mode</h2>
+        <p>You're the coach. Read the situation, check the stats, make the call.</p>
+      </div>
+      <span class="go">Play →</span>
+    </button>`;
 }
 
 /* One consolidated instructional page per category — combines every skill's
@@ -179,6 +203,77 @@ function renderPlay(c){
   return `<div class="panel">${head}${controls}</div>`;
 }
 
+/* ---------- Coach Mode: situational decision scenarios ----------
+   Parallel to renderDomainPlay/renderPlay rather than reusing them —
+   scenarios aren't keyed by state.skill/SKILLS, and the "answer" is always
+   a pick among named candidate cards, not one of the existing problem
+   kinds, so a small amount of duplication here is lower-risk than bending
+   the domain-play code to fit a shape it wasn't built for. */
+function renderCoachPlay(){
+  const key = state.scenarioKey;
+  const c = SCENARIOS[key];
+  const lvl = getLevel('coach_'+key);
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" data-action="home">← All categories</button>
+      <h2>Coach Mode</h2>
+      <span class="lvlpill">${esc(c.title)} · Lv ${lvl}/${c.maxLevel}</span>
+    </div>
+    ${renderCoachPanel(c)}`;
+}
+
+function renderCoachPanel(c){
+  if(!state.problem){ state.problem = c.gen(getLevel('coach_'+state.scenarioKey)); state.answered=false; }
+  const p = state.problem;
+  const head = `
+    <div style="color:var(--muted);font-size:14px;margin-bottom:4px">${esc(p.pre)}</div>
+    <div class="qtext">${esc(p.question)}</div>`;
+
+  const cards = p.candidates.map((cand,i)=>{
+    const pct = Math.round(cand.made/cand.attempted*100);
+    let cls = '';
+    if(state.answered) cls = i===p.answer ? 'right' : (i===state.userAnswer ? 'wrong' : '');
+    return `<button class="statcard ${cls}" data-action="ans-coach" data-idx="${i}" ${state.answered?'disabled':''}>
+      <span class="name">${esc(cand.name)}</span>
+      <span class="stat">${cand.made}/${cand.attempted} (${pct}% ${esc(p.statUnit)})</span>
+    </button>`;
+  }).join('');
+
+  let feedback = '';
+  if(state.answered){
+    const head2 = state.correct ? rnd(PRAISE) : "Not quite";
+    const lead = state.correct
+      ? `<div class="why">Why: ${p.why}</div>`
+      : `<div class="why">The right call was <b>${esc(p.candidates[p.answer].name)}</b>. ${p.why}</div>`;
+    feedback = `
+      <div class="feedback ${state.correct?'good':'bad'}">
+        <div class="head">${head2}</div>
+        ${lead}
+      </div>
+      <button class="next" data-action="next-coach">Next scenario →</button>`;
+  }
+
+  return `<div class="panel">${head}<div class="statcards">${cards}</div>${feedback}</div>`;
+}
+
+function updateCoachResult(key, maxLevel, correct){
+  state.correct = correct;
+  if(correct){ state.score++; state.streak++; } else { state.streak = 0; }
+  const lvlKey = 'coach_'+key;
+  let lvl = getLevel(lvlKey);
+  lvl = correct ? Math.min(maxLevel, lvl+1) : Math.max(1, lvl-1);
+  state.levels[lvlKey] = lvl;
+  saveProgress();
+}
+function coachAnswer(idx){
+  if(state.answered) return;
+  const correct = idx === state.problem.answer;
+  state.userAnswer = idx;
+  updateCoachResult(state.scenarioKey, SCENARIOS[state.scenarioKey].maxLevel, correct);
+  state.answered = true;
+  render();
+}
+
 function displayAnswer(p){
   if(p.kind==='bool') return p.answer?'Statistical':'Not statistical';
   if(p.kind==='choice') return p.choices[p.answer];
@@ -230,12 +325,24 @@ function answer(correct){ if(state.answered) return; updateResult(correct); stat
 document.addEventListener('click', e=>{
   const el = e.target.closest('[data-action]'); if(!el) return;
   const a = el.dataset.action;
-  if(a==='home'){ state.view='home'; state.domain=null; state.skill=null; state.problem=null; state.answered=false; render(); }
+  if(a==='home'){ state.view='home'; state.domain=null; state.skill=null; state.scenarioKey=null; state.problem=null; state.answered=false; render(); }
   else if(a==='open-learn'){ state.view='learn'; state.domain=el.dataset.domain; render(); }
   else if(a==='open-domain'){
     state.view='play'; state.domain=el.dataset.domain;
     state.skill=pickSkillForDomain(state.domain);
     state.problem=null; state.answered=false;
+    render();
+  }
+  else if(a==='open-coach'){
+    state.view='coach'; state.scenarioKey=pickScenario();
+    state.problem=null; state.answered=false;
+    render();
+  }
+  else if(a==='ans-coach'){ coachAnswer(+el.dataset.idx); }
+  else if(a==='next-coach'){
+    state.scenarioKey=pickScenario();
+    state.problem=SCENARIOS[state.scenarioKey].gen(getLevel('coach_'+state.scenarioKey));
+    state.answered=false;
     render();
   }
   else if(a==='ans-bool'){ state.userAnswer=(el.dataset.val==='true'); answer(state.userAnswer===state.problem.answer); }

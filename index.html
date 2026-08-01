@@ -16,7 +16,7 @@
   :root{
     --bg:#0a0e16; --bg2:#121826; --panel:#161d2e; --line:rgba(255,255,255,.09);
     --orange:#ff6a1a; --orange-soft:#ff8c45; --cyan:#28d6e6; --amber:#ffcf3f;
-    --green:#54e07a; --red:#ff5d5d; --text:#eef3fb; --muted:#8b99b2;
+    --green:#54e07a; --red:#ff5d5d; --text:#eef3fb; --muted:#8b99b2; --violet:#b389f9;
     --display:'Anton', 'Impact', 'Arial Narrow', sans-serif;
     --body:'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
@@ -76,6 +76,21 @@
   .learn{display:inline-block;background:none;color:var(--cyan);font-weight:800;
     border:1px solid var(--line);border-radius:10px;padding:9px 16px;font-family:var(--body);font-size:14px;cursor:pointer}
   .learn:active{transform:scale(.97)}
+
+  /* Coach Mode banner — deliberately distinct from the 6 domain cards above,
+     since it's a different kind of activity (situational decisions), not a
+     7th subject. */
+  .coachbanner{display:flex;align-items:center;gap:16px;text-align:left;width:100%;
+    background:linear-gradient(135deg, rgba(179,137,249,.14), var(--panel));
+    border:1.5px solid rgba(179,137,249,.4);border-radius:var(--rad);
+    padding:18px 20px;margin-top:18px;cursor:pointer;
+    transition:transform .14s ease,border-color .14s ease;animation:rise .45s ease both}
+  .coachbanner:hover{transform:translateY(-4px);border-color:var(--violet)}
+  .coachbanner .icon{font-size:34px;line-height:1;flex-shrink:0}
+  .coachbanner .body{flex:1;min-width:0}
+  .coachbanner h2{font-family:var(--display);font-weight:400;letter-spacing:.5px;font-size:22px;margin:0 0 4px;color:var(--violet)}
+  .coachbanner p{color:var(--muted);font-size:14px;margin:0}
+  .coachbanner .go{background:var(--violet);color:#1a0a2e;flex-shrink:0}
 
   /* Concept view */
   .topbar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
@@ -204,6 +219,19 @@
   .opt:hover{border-color:var(--orange)} .opt:active{transform:scale(.97)}
   .opt.right{border-color:var(--green);background:rgba(84,224,122,.14)}
   .opt.wrong{border-color:var(--red);background:rgba(255,93,93,.14)}
+
+  /* Coach Mode candidate cards — same interaction/feedback language as .opt
+     (click to answer, right/wrong highlight), but two lines so the stat is
+     visible up front instead of buried in a text label. */
+  .statcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .statcard{background:var(--bg2);border:1.5px solid var(--line);color:var(--text);
+    border-radius:12px;padding:16px;font-family:var(--body);text-align:left;cursor:pointer;
+    transition:transform .1s ease,border-color .12s ease,background .12s ease}
+  .statcard:hover{border-color:var(--violet)} .statcard:active{transform:scale(.97)}
+  .statcard .name{font-weight:800;font-size:16px;display:block;margin-bottom:6px}
+  .statcard .stat{font-family:var(--mono);font-size:14px;color:var(--muted)}
+  .statcard.right{border-color:var(--green);background:rgba(84,224,122,.14)}
+  .statcard.wrong{border-color:var(--red);background:rgba(255,93,93,.14)}
   .numrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .numrow input{flex:1;background:var(--bg2);border:1.5px solid var(--line);color:var(--text);
     border-radius:12px;padding:15px 16px;font-family:var(--mono);font-size:22px;font-weight:700;
@@ -257,6 +285,8 @@
 <script>
   /* Populated by js/skills/*.js, consumed by js/engine.js */
   const SKILLS = {};
+  /* Populated by js/scenarios/*.js, consumed by js/engine.js's Coach Mode */
+  const SCENARIOS = {};
 </script>
 <script src="data/mlb-2025.js"></script>
 <script src="data/nba-2024.js"></script>
@@ -268,6 +298,7 @@
 <script src="js/skills/ratios.js"></script>
 <script src="js/skills/geometry.js"></script>
 <script src="js/skills/expressions.js"></script>
+<script src="js/scenarios/basketball.js"></script>
 <script src="js/engine.js"></script>
 </body>
 </html>
