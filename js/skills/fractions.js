@@ -147,17 +147,62 @@ Object.assign(SKILLS, {
     gen:genFractionOps,
     coach:`
       <p class="lead">Fractions with the <b>same denominator</b> are already talking about equal-sized pieces, so you can add or subtract the top numbers directly and leave the bottom alone. When the denominators are <b>different</b>, the pieces are different sizes — you have to rewrite both fractions using a shared, common denominator before you can combine them at all.</p>
+
+      <p class="lead">Sofia's coach set up an 8-shot free-throw challenge split into two rounds. In round one, she made 3 of the 8 attempts. In round two, she made 4 more of the 8. What fraction of the whole challenge did she make?</p>
       <div class="whiteboard">
-        <div class="wb-row">Same bottom (free throws): <span style="font-family:var(--mono)">2/8 + 3/8 = 5/8</span> of attempts made</div>
-        <div class="wb-row">Same bottom, subtracting (goals): <span style="font-family:var(--mono)">5/6 − 2/6 = 3/6 = 1/2</span></div>
-        <div class="wb-row">Different bottoms (distance run): <span style="font-family:var(--mono)">1/2 + 1/3</span> → common denominator 6 → <span style="font-family:var(--mono)">3/6 + 2/6 = 5/6</span> mile</div>
+        <div class="wb-row">Step 1 — same denominator (8) means the pieces are already the same size, so just add the tops: 3 + 4 = 7.</div>
+        ${fracBarHTML(3,8,"Sofia's makes: round 1 (orange) + round 2 (cyan)",4)}
+        <div class="wb-row">Step 2 — 3/8 + 4/8 = <b>7/8</b> of the whole challenge.</div>
       </div>
-      <p class="lead">To <b>multiply</b> a whole number by a fraction, split the whole into that many equal parts and take however many the numerator says. To <b>divide</b> a fraction by a whole number, split it into even smaller pieces — the denominator gets bigger, not smaller.</p>
+
+      <p class="lead">Now a subtraction: Marcus's team ran a 6-kick shootout drill. He got 5 of his 6 kicks on target. But the drill only counts a kick as a "clean goal" if the keeper never touches it — the keeper got a hand on 2 of those on-target kicks. What fraction of his 6 kicks were clean goals?</p>
       <div class="whiteboard">
-        <div class="wb-row">Multiply (shots made): <span style="font-family:var(--mono)">3/4 of 20 shots = 15</span> makes</div>
-        <div class="wb-row">Multiply (season wins): <span style="font-family:var(--mono)">2/3 of 18 games = 12</span> wins</div>
-        <div class="wb-row">Divide (practice time): <span style="font-family:var(--mono)">3/4 hour ÷ 3 drills = 3/12 = 1/4</span> hour each</div>
+        <div class="wb-row">Step 1 — on target: 5/6 of his kicks.</div>
+        ${fracBarHTML(5,6,"On target")}
+        <div class="wb-row">Step 2 — subtract the 2/6 the keeper touched: 5 − 2 = 3, so 3/6.</div>
+        ${fracBarHTML(3,6,"Clean goals")}
+        <div class="wb-row">Step 3 — simplify: 3/6 = <b>1/2</b> — half of his kicks were clean goals.</div>
       </div>
+
+      <p class="lead">Different denominators are trickier because the "pieces" aren't the same size until you fix that. Maya is training for a fun run: in the morning she ran 1/2 of a mile along the river path, and in the evening she ran another 1/3 of a mile around the block. How far did she run in total?</p>
+      <div class="whiteboard">
+        <div class="wb-row">Step 1 — 1/2 and 1/3 have different denominators, so find a common one: the smallest number both 2 and 3 divide into is 6.</div>
+        <div class="wb-row">Step 2 — rewrite both: 1/2 = 3/6, and 1/3 = 2/6.</div>
+        ${fracBarHTML(3,6,"Total distance, in sixths (morning + evening)",2)}
+        <div class="wb-row">Step 3 — now the pieces match, so add the tops: 3/6 + 2/6 = <b>5/6</b> of a mile.</div>
+      </div>
+
+      <p class="lead">Same idea in reverse for subtraction: Jamal's water bottle holds 3/4 of a liter when full. During his workout he drank 1/3 of a liter. How much is left?</p>
+      <div class="whiteboard">
+        <div class="wb-row">Step 1 — common denominator of 4 and 3 is 12: 3/4 = 9/12, and 1/3 = 4/12.</div>
+        <div class="wb-row">Step 2 — subtract: 9/12 − 4/12 = <b>5/12</b> of a liter left.</div>
+        ${fracBarHTML(5,12,"Water remaining, in twelfths")}
+      </div>
+
+      <p class="lead">To <b>multiply</b> a whole number by a fraction, split the whole into that many equal parts and take however many the numerator says. Leo's team attempted 20 shots this game, and the box score says 3/4 of those shots went in. How many shots did they actually make?</p>
+      <div class="whiteboard">
+        ${fracBarHTML(3,4,"3/4 of the team's 20 shots")}
+        <div class="wb-row">Step 1 — split the 20 shots into 4 equal parts (since the denominator is 4): 20 ÷ 4 = 5 shots per part.</div>
+        <div class="wb-row">Step 2 — take 3 of those parts: 3 × 5 = <b>15</b> makes.</div>
+      </div>
+      <p class="lead">One more: Nina's soccer team played 18 games this season and won 2/3 of them. How many games did they win?</p>
+      <div class="whiteboard">
+        ${fracBarHTML(2,3,"2/3 of an 18-game season")}
+        <div class="wb-row">18 ÷ 3 = 6 games per part. 2 × 6 = <b>12</b> wins.</div>
+      </div>
+
+      <p class="lead">To <b>divide</b> a fraction by a whole number, split it into even smaller pieces — the denominator gets bigger, not smaller. The team has 3/4 of an hour left before the bus leaves, and the coach wants to split that evenly across 3 final drills. How much time does each drill get?</p>
+      <div class="whiteboard">
+        <div class="wb-row">Step 1 — dividing by 3 means each of the existing fourths gets split into 3 smaller pieces: 3/4 ÷ 3 = 3/(4×3) = 3/12.</div>
+        <div class="wb-row">Step 2 — simplify: 3/12 = <b>1/4</b> of an hour per drill.</div>
+        ${fracBarHTML(1,4,"Time per drill")}
+      </div>
+      <p class="lead">And: Zoe's team has 2/3 of a bag of snacks left after the game, split evenly among 4 players. How much of the original bag does each player get?</p>
+      <div class="whiteboard">
+        <div class="wb-row">2/3 ÷ 4 = 2/(3×4) = 2/12 = <b>1/6</b> of the bag each.</div>
+        ${fracBarHTML(1,6,"Each player's share")}
+      </div>
+
       <p class="tip">Coach tip: enter answers as a fraction — top number, then bottom number. Any equivalent fraction counts as correct.</p>`
   }
 });

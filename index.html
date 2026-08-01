@@ -127,6 +127,65 @@
   .dotplot.light .dpaxis{color:#1a2230}
   .dpaxisline{border-top:2px solid var(--muted);margin-top:6px;padding-top:6px}
 
+  /* ---------- Learn-page visualizations ---------- */
+
+  /* fraction bar */
+  .fracbarwrap{margin:14px 0}
+  .fracbarlabel{font-size:13px;color:var(--muted);margin-bottom:6px}
+  .fracbar-viz{display:flex;height:38px;border-radius:8px;overflow:hidden;border:1.5px solid var(--line)}
+  .fracseg{flex:1;background:rgba(255,255,255,.04);border-right:1.5px solid var(--line)}
+  .fracseg:last-child{border-right:none}
+  .fracseg.filled{background:var(--orange)}
+  .fracseg.filled2{background:var(--cyan)}
+
+  /* number line */
+  .numberline{position:relative;height:56px;margin:26px 14px 38px}
+  .nlaxis{position:absolute;top:26px;left:0;right:0;height:2px;background:var(--line)}
+  .nltick{position:absolute;top:32px;transform:translateX(-50%);font-size:11px;color:var(--muted);font-family:var(--mono)}
+  .nldot{position:absolute;top:18px;width:16px;height:16px;border-radius:50%;background:var(--orange);
+    transform:translateX(-50%);border:2px solid var(--panel)}
+  .nlmark{position:absolute;bottom:26px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+  .nlmark::after{content:"";width:2px;height:26px;background:var(--mc,var(--cyan));display:block;margin-top:2px}
+  .nlmark span{font-size:11px;color:var(--mc,var(--cyan));font-weight:700;white-space:nowrap}
+
+  /* coordinate grid (SVG, drawn on the light "whiteboard" background) */
+  .coordgrid{width:100%;max-width:220px;display:block;margin:14px auto;background:#f6f7f4;border-radius:12px}
+  .gridline{stroke:rgba(0,0,0,.08);stroke-width:1}
+  .axisline{stroke:#1a2230;stroke-width:1.5}
+  .gridpoint{stroke:#1a2230;stroke-width:1}
+  .gridlabel{font-size:10px;fill:#1a2230;font-family:var(--mono)}
+
+  /* isometric box diagram (SVG) */
+  .boxdiagram{width:100%;max-width:220px;display:block;margin:14px auto}
+  .boxtop{fill:#eef3fb;stroke:#1a2230;stroke-width:1.5}
+  .boxside{fill:#c7cede;stroke:#1a2230;stroke-width:1.5}
+  .boxfront{fill:#dfe4ee;stroke:#1a2230;stroke-width:1.5}
+  .boxlabel{font-size:11px;fill:#1a2230;font-family:var(--mono);font-weight:700}
+
+  /* equation balance scale */
+  .balance{position:relative;height:110px;margin:22px auto 32px;max-width:320px}
+  .balancebar{position:absolute;top:20px;left:0;right:0;height:4px;background:var(--muted);border-radius:2px}
+  .fulcrum{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;
+    border-left:14px solid transparent;border-right:14px solid transparent;border-bottom:36px solid #8b99b2}
+  .pan{position:absolute;top:24px;width:42%;display:flex;flex-direction:column;align-items:center}
+  .pan.left{left:0} .pan.right{right:0}
+  .pancontent{background:var(--bg2);border:1.5px solid var(--line);border-radius:10px;padding:10px 14px;
+    font-family:var(--mono);font-weight:700;font-size:15px;min-width:50px;text-align:center;color:var(--text)}
+
+  /* ratio icon array */
+  .ratioviz{margin:14px 0}
+  .ratiorow{display:flex;align-items:center;gap:10px;margin:6px 0;flex-wrap:wrap}
+  .ratioicons{font-size:22px;letter-spacing:4px}
+  .ratiolabel{color:var(--muted);font-size:13px}
+
+  /* flat 2D shape diagrams (rectangle/triangle/parallelogram/L-shape) */
+  .areasvg{width:100%;max-width:240px;display:block;margin:14px auto}
+  .areafill{fill:var(--orange);fill-opacity:.55;stroke:#1a2230;stroke-width:1.5}
+  .areaoutline{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 3}
+  .areadash{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 3}
+  .areacut{fill:#0d1117;fill-opacity:.85;stroke:#1a2230;stroke-width:1.5;stroke-dasharray:3 2}
+  .arealabel{font-size:11px;fill:#1a2230;font-family:var(--mono);font-weight:700}
+
   /* standard-algorithm vertical stack (drills) */
   .stack{display:inline-flex;flex-direction:column;align-items:flex-end;
     font-family:var(--mono);font-weight:800;font-size:30px;margin:10px 0;

@@ -209,9 +209,24 @@ Object.assign(SKILLS, {
     skill:"Standard-algorithm addition and subtraction, from single digits up to 4-digit numbers.",
     std:"4.NBT.B.4", maxLevel:4, gen:genAddSub,
     coach:`<p class="lead">The standard algorithm works because of <b>place value</b> — ones only combine with ones, tens with tens, and so on. Line up the numbers so matching place values sit in the same column, then work from the <b>ones place</b> outward. If a column adds up to 10 or more, write down the ones digit and <b>carry</b> the extra 1 into the next column. If the top digit in a column is smaller than the bottom digit, <b>borrow</b> 1 from the column to its left before subtracting.</p>
+
+      <p class="lead">Riverside Arena sold tickets across two sections tonight: 1,847 in the lower bowl and 956 in the upper deck. How many tickets sold in total?</p>
       <div class="whiteboard">
-        <div class="wb-row">Ticket sales: <span style="font-family:var(--mono)">1,847 + 956 = 2,803</span> (carry twice)</div>
-        <div class="wb-row">Seats remaining: <span style="font-family:var(--mono)">5,000 − 3,214 = 1,786</span> (borrow across zeros)</div>
+        ${stackHTML([1847,956],'+')}
+        <div class="wb-row">Step 1 — ones: 7 + 6 = 13. Write the 3, carry the 1.</div>
+        <div class="wb-row">Step 2 — tens: 4 + 5 + (carried 1) = 10. Write the 0, carry the 1.</div>
+        <div class="wb-row">Step 3 — hundreds: 8 + 9 + (carried 1) = 18. Write the 8, carry the 1.</div>
+        <div class="wb-row">Step 4 — thousands: 1 + 0 + (carried 1) = 2.</div>
+        <div class="wb-row">Result: <b>2,803</b> tickets sold.</div>
+      </div>
+
+      <p class="lead">Now a subtraction that borrows across zeros — the trickiest version of this skill. The arena holds 5,000 seats total. So far, 3,214 tickets have been sold. How many seats are still empty?</p>
+      <div class="whiteboard">
+        ${stackHTML([5000,3214],'−')}
+        <div class="wb-row">Step 1 — ones: can't do 0 − 4, so we need to borrow. But the tens and hundreds digits are also 0, so the borrow has to cascade all the way from the thousands place.</div>
+        <div class="wb-row">Step 2 — after borrowing, 5,000 becomes "4 (thousands), 9 (hundreds), 9 (tens), 10 (ones)" — same value, just regrouped.</div>
+        <div class="wb-row">Step 3 — now subtract column by column: 10 − 4 = 6, 9 − 1 = 8, 9 − 2 = 7, 4 − 3 = 1.</div>
+        <div class="wb-row">Result: <b>1,786</b> empty seats.</div>
       </div>
       <p class="tip">Coach tip: writing the numbers in a neat vertical stack — one digit per column — makes it much harder to line things up wrong.</p>`
   },
@@ -220,10 +235,23 @@ Object.assign(SKILLS, {
     domain:'Number Fluency',
     skill:"Times tables up through multi-digit standard-algorithm multiplication.",
     std:"5.NBT.B.5", maxLevel:4, gen:genMul,
-    coach:`<p class="lead">Multi-digit multiplication is really the <b>distributive property</b> in disguise: break the bottom number into its place values (like 23 = 20 + 3), multiply the top number by each piece separately, then add those <b>partial products</b> together. Shifting each partial product one place to the left accounts for the fact that a tens digit is worth ten times as much as a ones digit.</p>
+    coach:`<p class="lead">Multi-digit multiplication is really the <b>distributive property</b> in disguise: break one number into its place values (like 23 = 20 + 3), multiply the other number by each piece separately, then add those <b>partial products</b> together. Shifting each partial product one place to the left accounts for the fact that a tens digit is worth ten times as much as a ones digit.</p>
+
+      <p class="lead">Riverside Arena's lower bowl has 34 rows with 6 seats in each row. How many seats are in the lower bowl?</p>
       <div class="whiteboard">
-        <div class="wb-row">Seats per section: <span style="font-family:var(--mono)">34 × 6 = 204</span></div>
-        <div class="wb-row">Full stadium: <span style="font-family:var(--mono)">247 × 32 = 7,904</span></div>
+        ${stackHTML([34,6],'×')}
+        <div class="wb-row">Step 1 — multiply the ones digit: 6 × 4 = 24. Write the 4, carry the 2.</div>
+        <div class="wb-row">Step 2 — multiply the tens digit: 6 × 3 = 18, plus the carried 2 = 20.</div>
+        <div class="wb-row">Result: <b>204</b> seats.</div>
+      </div>
+
+      <p class="lead">Now a bigger one where the partial products really show themselves. The upper deck has 247 seats per section, and there are 32 identical sections. How many seats does the upper deck hold?</p>
+      <div class="whiteboard">
+        ${stackHTML([247,32],'×')}
+        <div class="wb-row">Step 1 — break 32 into 30 + 2, and multiply 247 by each piece separately.</div>
+        <div class="wb-row">Step 2 — first partial product: 247 × 2 = 494.</div>
+        <div class="wb-row">Step 3 — second partial product: 247 × 30 = 7,410 (that's 247 × 3, shifted one place left for the tens place).</div>
+        <div class="wb-row">Step 4 — add the two partial products: 494 + 7,410 = <b>7,904</b> seats.</div>
       </div>
       <p class="tip">Coach tip: estimate first (34 × 6 is close to 30 × 6 = 180) — it catches a lot of place-value mistakes before you even check your work.</p>`
   },
@@ -233,9 +261,22 @@ Object.assign(SKILLS, {
     skill:"Long division, including remainders.",
     std:"5.NBT.B.6", maxLevel:4, gen:genDiv,
     coach:`<p class="lead">Long division answers one question over and over: "how many times does the divisor fit?" Start with the leftmost digits of the dividend, find the biggest multiple of the divisor that fits, subtract it, bring down the next digit, and repeat. Whatever's left over at the very end — smaller than the divisor — is the <b>remainder</b>.</p>
+
+      <p class="lead">A team scored 96 total points across an 8-game homestand. If every game were exactly the same, how many points would that be per game?</p>
       <div class="whiteboard">
-        <div class="wb-row">Points split evenly: <span style="font-family:var(--mono)">96 ÷ 8 = 12</span> per game</div>
-        <div class="wb-row">Uneven split: <span style="font-family:var(--mono)">100 ÷ 8 = 12</span> R <span style="font-family:var(--mono)">4</span></div>
+        <div class="wb-row">96 ÷ 8 = ?</div>
+        <div class="wb-row">Step 1 — how many times does 8 fit into 9 (the first digit)? Once, with 1 left over.</div>
+        <div class="wb-row">Step 2 — bring down the next digit (6): now we have 16. How many times does 8 fit into 16? Exactly 2 times, with nothing left over.</div>
+        <div class="wb-row">Result: <b>12</b> points per game, evenly.</div>
+      </div>
+
+      <p class="lead">Now one that doesn't divide evenly — which is most real games! Same 8-game homestand, but this time the team scored 100 total points. How many points per game, and how many are "extra"?</p>
+      <div class="whiteboard">
+        <div class="wb-row">100 ÷ 8 = ?</div>
+        <div class="wb-row">Step 1 — how many times does 8 fit into 10 (the first two digits)? Once (8), with 2 left over.</div>
+        <div class="wb-row">Step 2 — bring down the next digit (0): now we have 20. How many times does 8 fit into 20? Twice (16), with 4 left over.</div>
+        <div class="wb-row">Step 3 — there are no more digits to bring down, so that leftover 4 is the final <b>remainder</b>.</div>
+        <div class="wb-row">Result: <b>12</b> points per game, remainder <b>4</b>.</div>
       </div>
       <p class="tip">Coach tip: check your work by multiplying the quotient back by the divisor and adding the remainder — it should land you right back on the original number.</p>`
   },
@@ -245,9 +286,23 @@ Object.assign(SKILLS, {
     skill:"Decimal add/subtract/multiply/divide, standard algorithm.",
     std:"5.NBT.B.7", maxLevel:4, gen:genDec,
     coach:`<p class="lead">Decimals follow the same place-value rules as whole numbers — the decimal point just marks where the ones place ends. For <b>adding or subtracting</b>, line up the decimal points so matching places stay together (pad with a trailing zero if one number has fewer decimal places). For <b>multiplying</b>, ignore the decimal points completely, multiply as if they were whole numbers, then count the total decimal places in both factors to know where the point goes in your answer.</p>
+
+      <p class="lead">Priya ran two legs of a relay: her first leg took 12.45 seconds, and her second leg took 9.8 seconds. What was her total time for both legs?</p>
       <div class="whiteboard">
-        <div class="wb-row">Race times: <span style="font-family:var(--mono)">12.45 + 9.8 = 22.25</span> seconds</div>
-        <div class="wb-row">Total distance: <span style="font-family:var(--mono)">3.2 × 4 = 12.8</span> miles</div>
+        <div class="wb-row">12.45 + 9.8 = ?</div>
+        <div class="wb-row">Step 1 — 9.8 only has one decimal place, but 12.45 has two. Pad 9.8 with a trailing zero so they match: 9.80.</div>
+        <div class="wb-row">Step 2 — line up the decimal points and add like whole numbers: 12.45 + 9.80.</div>
+        <div class="wb-row">Step 3 — ones/tenths/hundredths add normally: 45 + 80 = 125 (hundredths), which regroups into 1.25; 12 + 9 + 1 (carried) = 22.</div>
+        <div class="wb-row">Result: <b>22.25</b> seconds total.</div>
+      </div>
+
+      <p class="lead">Priya also runs 3.2 miles every training session. If she trains 4 times this week, how many total miles will she run?</p>
+      <div class="whiteboard">
+        <div class="wb-row">3.2 × 4 = ?</div>
+        <div class="wb-row">Step 1 — ignore the decimal point completely and multiply as whole numbers: 32 × 4 = 128.</div>
+        <div class="wb-row">Step 2 — count the decimal places in the problem: 3.2 has exactly one. So the answer needs exactly one decimal place too.</div>
+        <div class="wb-row">Step 3 — place the point one digit from the right: 12.8.</div>
+        <div class="wb-row">Result: <b>12.8</b> miles this week.</div>
       </div>
       <p class="tip">Coach tip: for multiplication, count decimal places in the PROBLEM, not the answer — 3.2 has one decimal place, so the answer needs exactly one.</p>`
   }

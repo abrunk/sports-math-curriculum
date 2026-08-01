@@ -126,11 +126,33 @@ Object.assign(SKILLS, {
     skill:"Evaluate expressions with parentheses and exponents in the right order.",
     std:"5.OA.A.1 → 6.EE.A.1", maxLevel:4, gen:genOrderOfOps,
     coach:`<p class="lead">Order of operations is just a shared set of rules mathematicians agree to follow so everyone gets the <b>same answer</b> from the same expression. Without an agreed order, "3 + 4 × 2" could mean 14 or 11 depending on who you ask! The agreed order is: <b>parentheses</b> first, then <b>exponents</b>, then <b>multiply/divide</b> left to right, then <b>add/subtract</b> left to right (PEMDAS).</p>
+
+      <p class="lead">Diego's team runs 3 lineups this quarter, and each lineup scores (5 + 4) points. Using (5 + 4) × 3, what's the total?</p>
       <div class="whiteboard">
-        <div class="wb-row">(3 + 4) × 2 → parentheses first: 7 × 2 = <b>14</b></div>
-        <div class="wb-row">3² + 4 × 2 → exponent first: 9, then multiply: 8, then add: <b>17</b></div>
-        <div class="wb-row">20 − 2 × 6 → multiply first: 12, then subtract: 20 − 12 = <b>8</b></div>
+        <div class="wb-row">Step 1 — parentheses always go first, even before multiplication: 5 + 4 = 9.</div>
+        <div class="wb-row">Step 2 — now multiply: 9 × 3 = <b>27</b> points.</div>
       </div>
+
+      <p class="lead">Now a case with no parentheses at all. Diego's team started with 50 points banked, then gave up 3 baskets worth 6 points each. Using 50 − 6 × 3, what's left?</p>
+      <div class="whiteboard">
+        <div class="wb-row">Step 1 — it's tempting to subtract first left-to-right, but multiplication always comes before subtraction: 6 × 3 = 18.</div>
+        <div class="wb-row">Step 2 — now subtract: 50 − 18 = <b>32</b> points.</div>
+      </div>
+
+      <p class="lead">Exponents slot in even before multiplication. Priya's bonus score is 4 squared, plus 5 sets of 3 points. Using 4² + 5 × 3, what's the total?</p>
+      <div class="whiteboard">
+        <div class="wb-row">Step 1 — exponent first: 4² = 4 × 4 = 16.</div>
+        <div class="wb-row">Step 2 — multiply: 5 × 3 = 15.</div>
+        <div class="wb-row">Step 3 — now add, since that's all that's left: 16 + 15 = <b>31</b> points.</div>
+      </div>
+
+      <p class="lead">A longer chain puts all the rules together. Nina's team scores (6 + 3) points per set, plays 4 sets, then takes a 5-point penalty. Using (6 + 3) × 4 − 5, what's the final total?</p>
+      <div class="whiteboard">
+        <div class="wb-row">Step 1 — parentheses first: 6 + 3 = 9.</div>
+        <div class="wb-row">Step 2 — multiply: 9 × 4 = 36.</div>
+        <div class="wb-row">Step 3 — subtract last: 36 − 5 = <b>31</b> points.</div>
+      </div>
+
       <p class="tip">Coach tip: doing the steps out of order is the #1 mistake here — always parentheses first, no matter what.</p>`
   },
   variableexpr:{
@@ -139,11 +161,33 @@ Object.assign(SKILLS, {
     skill:"Evaluate expressions with a variable, and find equivalent expressions.",
     std:"6.EE.A.2, 6.EE.A.3, 6.EE.A.4", maxLevel:4, gen:genVariableExpr,
     coach:`<p class="lead">A variable like <b>x</b> is just a placeholder for a number you don't know yet — or a number that changes depending on the situation, like how many points a player scored. To <b>evaluate</b> an expression, substitute the actual value in for x and then follow the normal order of operations. The <b>distributive property</b> lets you rewrite a(x + b) as ax + ab — the same value written two different ways, which is handy for simplifying or for checking your work a second way.</p>
+
+      <p class="lead">Marcus earns $5 per point he scores, plus a flat $10 bonus. If Marcus scored 8 points, using 5x + 10, how much did he earn?</p>
       <div class="whiteboard">
-        <div class="wb-row">If x = 5: 3x + 2 = 3×5 + 2 = <b>17</b></div>
-        <div class="wb-row">If x = 8 points, earnings = 4x + 10: 4×8 + 10 = <b>42</b></div>
-        <div class="wb-row">4(x + 3) distributes to <b>4x + 12</b></div>
+        <div class="wb-row">Step 1 — substitute x = 8 into the expression: 5(8) + 10.</div>
+        <div class="wb-row">Step 2 — multiply before adding: 5 × 8 = 40.</div>
+        <div class="wb-row">Step 3 — add the bonus: 40 + 10 = <b>$50</b>.</div>
       </div>
+
+      <p class="lead">Sofia's team earns $8 per ticket sold, minus $15 in processing fees. If they sold 12 tickets, using 8x − 15, what was their total?</p>
+      <div class="whiteboard">
+        <div class="wb-row">Step 1 — substitute x = 12: 8(12) − 15.</div>
+        <div class="wb-row">Step 2 — multiply first: 8 × 12 = 96.</div>
+        <div class="wb-row">Step 3 — subtract the fees: 96 − 15 = <b>$81</b>.</div>
+      </div>
+
+      <p class="lead">Sometimes you're not evaluating at all, just rewriting. Leo's coach writes the expression 6(x + 4) for the team's total points. Which expression means the exact same thing?</p>
+      <div class="whiteboard">
+        <div class="wb-row">Step 1 — the distributive property says a(x + b) = ax + ab. Multiply the 6 into BOTH terms inside the parentheses, not just the x.</div>
+        <div class="wb-row">Step 2 — 6 × x = 6x, and 6 × 4 = 24, so 6(x + 4) = <b>6x + 24</b>.</div>
+      </div>
+
+      <p class="lead">Theo's bonus formula is 7(x − 3) points, where x is games played. If x = 10, how many bonus points does Theo earn?</p>
+      <div class="whiteboard">
+        <div class="wb-row">Step 1 — work inside the parentheses first, just like regular order of operations: 10 − 3 = 7.</div>
+        <div class="wb-row">Step 2 — multiply: 7 × 7 = <b>49</b> bonus points.</div>
+      </div>
+
       <p class="tip">Coach tip: substitute first, multiply/divide before add/subtract — same order of operations rules apply.</p>`
   },
   equations:{
@@ -151,12 +195,35 @@ Object.assign(SKILLS, {
     domain:'Expressions & Equations',
     skill:"Solve for x in one-step addition, subtraction, and multiplication equations.",
     std:"6.EE.B.5, 6.EE.B.6, 6.EE.B.7", maxLevel:4, gen:genEquations,
-    coach:`<p class="lead">Solving an equation means finding the exact value of x that makes both sides equal. The trick is to <b>undo</b> whatever is being done to x, using the opposite operation — undo addition with subtraction, undo subtraction with addition, undo multiplication with division. Whatever you do to one side of the equation, you have to do to the other side too, so it stays balanced.</p>
+    coach:`<p class="lead">Solving an equation means finding the exact value of x that makes both sides equal. The trick is to <b>undo</b> whatever is being done to x, using the opposite operation — undo addition with subtraction, undo subtraction with addition, undo multiplication with division. Whatever you do to one side of the equation, you have to do to the other side too, so it stays balanced — just like a real balance scale has to keep both pans level.</p>
+
+      <p class="lead">Sofia needs a certain number of points to break the school record. She needs 45 total, and has scored 32 so far. Solve x + 32 = 45 to find how many more points she needs.</p>
       <div class="whiteboard">
-        <div class="wb-row">x + 7 = 12 → subtract 7 from both sides → x = <b>5</b></div>
-        <div class="wb-row">x − 9 = 14 → add 9 to both sides → x = <b>23</b></div>
-        <div class="wb-row">4x = 20 → divide both sides by 4 → x = <b>5</b></div>
+        ${balanceHTML('x + 32','45')}
+        <div class="wb-row">Step 1 — x is being added to 32, so undo it with the opposite operation: subtract 32 from BOTH sides to keep the scale balanced.</div>
+        <div class="wb-row">Step 2 — x = 45 − 32 = <b>13</b> more points needed.</div>
       </div>
+
+      <p class="lead">Diego's team scores 6 points per basket, and finished the game with 48 points. Solve 6x = 48 to find how many baskets they made.</p>
+      <div class="whiteboard">
+        ${balanceHTML('6x','48')}
+        <div class="wb-row">Step 1 — x is being multiplied by 6, so undo it by dividing BOTH sides by 6.</div>
+        <div class="wb-row">Step 2 — x = 48 ÷ 6 = <b>8</b> baskets.</div>
+      </div>
+
+      <p class="lead">Leo had some number of points, then lost 20 in a penalty, ending with 15. Solve x − 20 = 15 to find how many points he started with.</p>
+      <div class="whiteboard">
+        ${balanceHTML('x − 20','15')}
+        <div class="wb-row">Step 1 — x is having 20 subtracted from it, so undo that by adding 20 to BOTH sides.</div>
+        <div class="wb-row">Step 2 — x = 15 + 20 = <b>35</b> points.</div>
+      </div>
+
+      <p class="lead">Nina's team needs 150 total wins across the season, and they already have 92. Solve x + 92 = 150 to find how many more wins they need.</p>
+      <div class="whiteboard">
+        ${balanceHTML('x + 92','150')}
+        <div class="wb-row">Subtract 92 from both sides: x = 150 − 92 = <b>58</b> more wins.</div>
+      </div>
+
       <p class="tip">Coach tip: whatever you do to one side of the equation, you have to do to the other side too.</p>`
   }
 });

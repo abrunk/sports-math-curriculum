@@ -164,12 +164,36 @@ Object.assign(SKILLS, {
     skill:"Plot and read points, find distances, and reflect points on a shot chart.",
     std:"5.G.A.1, 5.G.A.2, 6.G.A.3", maxLevel:4, gen:genCoordinatePlane,
     coach:`<p class="lead">Every point on the coordinate plane is written (x, y): <b>x</b> tells you how far to move right (or left, if negative) from the origin (0,0), and <b>y</b> tells you how far to move up (or down). If two points share the same x-coordinate, they're stacked directly above and below each other, so the distance between them is just the difference of their y-coordinates — the same idea works sideways when two points share a y-coordinate.</p>
+
+      <p class="lead">On the team's shot chart, the hoop sits at the origin (0,0). Maya takes a shot 6 feet to the right and 4 feet up from the hoop. What are the coordinates of her shot?</p>
       <div class="whiteboard">
-        <div class="wb-row">3 right, 4 up from the hoop → <b>(3, 4)</b></div>
-        <div class="wb-row">(2, 0) and (2, 6) share an x → distance = |6 − 0| = <b>6</b></div>
-        <div class="wb-row">A field with corners (0,0), (8,0), (8,5), (0,5) has width 8 and height 5 → area = <b>40</b></div>
-        <div class="wb-row">Reflecting (4, 3) across the y-axis flips left/right → <b>(−4, 3)</b></div>
+        ${coordGridHTML([{x:6,y:4,label:'Maya',color:'var(--orange)'}], 10, false)}
+        <div class="wb-row">Step 1 — right/left is always the x-coordinate: 6 feet right → x = 6.</div>
+        <div class="wb-row">Step 2 — up/down is always the y-coordinate: 4 feet up → y = 4.</div>
+        <div class="wb-row">Step 3 — the shot is at <b>(6, 4)</b>.</div>
       </div>
+
+      <p class="lead">Two field markers on Diego's practice field are at (2, 1) and (2, 8). What is the distance between them?</p>
+      <div class="whiteboard">
+        ${coordGridHTML([{x:2,y:1,label:'A',color:'var(--orange)'},{x:2,y:8,label:'B',color:'var(--cyan)'}], 10, false)}
+        <div class="wb-row">Step 1 — both points have the same x-coordinate (2), so they sit on the same vertical line — one directly above the other.</div>
+        <div class="wb-row">Step 2 — since they're on the same vertical line, just subtract the y-coordinates: |8 − 1| = <b>7</b>.</div>
+      </div>
+
+      <p class="lead">A rectangular section of the practice field has corners at (0,0), (8,0), (8,5), and (0,5). What is the area of that section?</p>
+      <div class="whiteboard">
+        ${coordGridHTML([{x:0,y:0,color:'var(--orange)'},{x:8,y:0,color:'var(--orange)'},{x:8,y:5,color:'var(--orange)'},{x:0,y:5,color:'var(--orange)'}], 10, false)}
+        <div class="wb-row">Step 1 — the corners share x-values of 0 and 8, so the width is 8 − 0 = 8. They share y-values of 0 and 5, so the height is 5 − 0 = 5.</div>
+        <div class="wb-row">Step 2 — area = width × height = 8 × 5 = <b>40</b> square units.</div>
+      </div>
+
+      <p class="lead">Leo shoots from (4, 3), with the hoop at the origin. A teammate stands at the mirrored spot on the opposite side of the hoop — same distance, flipped left-right. What are the teammate's coordinates?</p>
+      <div class="whiteboard">
+        ${coordGridHTML([{x:4,y:3,label:'Leo',color:'var(--orange)'},{x:-4,y:3,label:'Teammate',color:'var(--cyan)'}], 6, true)}
+        <div class="wb-row">Step 1 — flipping left-right across the y-axis keeps the height (y) the same but flips the sign of the sideways distance (x): 4 becomes −4.</div>
+        <div class="wb-row">Step 2 — the teammate is at <b>(−4, 3)</b>.</div>
+      </div>
+
       <p class="tip">Coach tip: enter coordinate answers as x, then y — negative numbers are allowed, just type the minus sign.</p>`
   },
   areashapes:{
@@ -178,12 +202,35 @@ Object.assign(SKILLS, {
     skill:"Find the area of rectangles, triangles, parallelograms, and combined shapes.",
     std:"6.G.A.1", maxLevel:4, gen:genAreaShapes,
     coach:`<p class="lead">Area measures how much surface a shape covers, in square units. Rectangle area = length × width. A right triangle is exactly <b>half</b> of a rectangle built around it, so triangle area = (base × height) ÷ 2 — that division by 2 is the single most common thing to forget. A parallelogram, once you slide the extra triangle off one end onto the other, becomes that same rectangle shape — same formula: base × height. For an oddly-shaped field, split it into rectangles and triangles you already know how to handle, then add or subtract their areas.</p>
+
+      <p class="lead">Nina's practice field is a rectangle, 12 yards by 7 yards. What is its area?</p>
       <div class="whiteboard">
-        <div class="wb-row">Rectangle 10 × 6 = <b>60</b></div>
-        <div class="wb-row">Triangle, base 10 height 6 → (10 × 6) ÷ 2 = <b>30</b></div>
-        <div class="wb-row">Parallelogram, base 12 height 5 → 12 × 5 = <b>60</b></div>
-        <div class="wb-row">L-shape: big rectangle minus the missing corner</div>
+        ${rectangleHTML(12,7)}
+        <div class="wb-row">Area of a rectangle = length × width = 12 × 7 = <b>84</b> square yards.</div>
       </div>
+
+      <p class="lead">The team's triangular pennant flag has a base of 10 inches and a height of 6 inches. What is the area of the flag?</p>
+      <div class="whiteboard">
+        ${triangleAreaHTML(10,6)}
+        <div class="wb-row">Step 1 — picture the dashed rectangle drawn around the triangle: it would be 10 × 6 = 60 square inches.</div>
+        <div class="wb-row">Step 2 — the triangle is exactly half of that rectangle, so divide by 2: 60 ÷ 2 = <b>30</b> square inches.</div>
+      </div>
+
+      <p class="lead">A parallelogram-shaped section of turf has a base of 11 feet and a height of 5 feet. What is its area?</p>
+      <div class="whiteboard">
+        ${parallelogramAreaHTML(11,5)}
+        <div class="wb-row">Step 1 — imagine slicing off the triangle on the slanted left edge and sliding it to the right edge — the shape becomes a plain rectangle with the same base and height.</div>
+        <div class="wb-row">Step 2 — so the formula is the same as a rectangle: base × height = 11 × 5 = <b>55</b> square feet.</div>
+      </div>
+
+      <p class="lead">The team is painting an L-shaped section of the field: a big rectangle 16 by 10 yards, with a 4 by 3 yard corner cut out. What is the area of the painted section?</p>
+      <div class="whiteboard">
+        ${lShapeHTML(16,10,4,3)}
+        <div class="wb-row">Step 1 — find the area of the big rectangle as if the corner weren't missing: 16 × 10 = 160.</div>
+        <div class="wb-row">Step 2 — find the area of the missing corner: 4 × 3 = 12.</div>
+        <div class="wb-row">Step 3 — subtract the missing piece: 160 − 12 = <b>148</b> square yards.</div>
+      </div>
+
       <p class="tip">Coach tip: always double-check whether you need to divide by 2 — that's the #1 triangle mistake.</p>`
   },
   volumesa:{
@@ -192,11 +239,34 @@ Object.assign(SKILLS, {
     skill:"Find the volume and surface area of boxes and equipment crates.",
     std:"6.G.A.2, 6.G.A.4", maxLevel:4, gen:genVolumeSurfaceArea,
     coach:`<p class="lead">Volume measures how much <b>space</b> is inside a box, in cubic units: length × width × height. Surface area measures how much material it takes to <b>wrap</b> the outside — a rectangular box has 6 faces in 3 matching pairs (top/bottom, front/back, left/right), so you find the area of one face from each pair, add those three together, then double it.</p>
+
+      <p class="lead">Theo's equipment box is 4 feet long, 3 feet wide, and 2 feet tall. What is its volume?</p>
       <div class="whiteboard">
-        <div class="wb-row">Volume: 4 × 3 × 2 = <b>24</b> cubic feet</div>
-        <div class="wb-row">Volume with a fractional edge: 4 × 3 × 2.5 = <b>30</b> cubic feet</div>
-        <div class="wb-row">Surface area: 2(lw + lh + wh) = 2(12 + 8 + 6) = <b>52</b> square feet</div>
+        ${boxHTML(4,3,2)}
+        <div class="wb-row">Volume = length × width × height = 4 × 3 × 2 = <b>24</b> cubic feet.</div>
       </div>
+
+      <p class="lead">A ball rack is 4 feet long, 3 feet wide, and 2.5 feet tall. What is its volume? (Edges don't have to be whole numbers — the formula works exactly the same way.)</p>
+      <div class="whiteboard">
+        ${boxHTML(4,3,2.5)}
+        <div class="wb-row">Volume = 4 × 3 × 2.5 = <b>30</b> cubic feet.</div>
+      </div>
+
+      <p class="lead">Priya's equipment box is 4 feet long, 3 feet wide, and 2 feet tall — same box as before. What is its total surface area?</p>
+      <div class="whiteboard">
+        ${boxHTML(4,3,2)}
+        <div class="wb-row">Step 1 — a box has 3 pairs of matching faces. Find the area of one face from each pair: top/bottom = l × w = 4 × 3 = 12. front/back = l × h = 4 × 2 = 8. left/right = w × h = 3 × 2 = 6.</div>
+        <div class="wb-row">Step 2 — add those three face areas: 12 + 8 + 6 = 26.</div>
+        <div class="wb-row">Step 3 — double it, since each face has a matching twin on the opposite side: 26 × 2 = <b>52</b> square feet.</div>
+      </div>
+
+      <p class="lead">A storage box has a volume of 60 cubic feet. It is measured to be 5 feet long and 4 feet wide. How tall is the box?</p>
+      <div class="whiteboard">
+        ${boxHTML(5,4,3)}
+        <div class="wb-row">Step 1 — since volume = length × width × height, dividing the volume by (length × width) leaves just the height: 60 ÷ (5 × 4) = 60 ÷ 20.</div>
+        <div class="wb-row">Step 2 — 60 ÷ 20 = <b>3</b> feet tall.</div>
+      </div>
+
       <p class="tip">Coach tip: volume can have fractional/decimal edge lengths — the multiplication works the same way.</p>`
   }
 });

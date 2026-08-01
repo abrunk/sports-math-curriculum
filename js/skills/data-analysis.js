@@ -266,16 +266,21 @@ Object.assign(SKILLS, {
     std:"6.SP.A.1", maxLevel:2,
     gen:genStatQ,
     coach:`
-      <p class="lead">A <b>statistical question</b> is one where you expect the answers to be <b>different</b> depending on who or what you're asking about. If a question only has one possible answer no matter what, it's <b>not</b> statistical — there's nothing to collect, graph, or average, because there's no variety to describe in the first place.</p>
-      <p class="lead">A quick test: would you need to ask more than once, or ask about more than one person or game, to answer it? If yes, it's statistical.</p>
+      <p class="lead">A <b>statistical question</b> is one where you expect the answers to be <b>different</b> depending on who or what you're asking about. If a question only has one possible answer no matter what, it's <b>not</b> statistical — there's nothing to collect, graph, or average, because there's no variety to describe in the first place. A quick test: would you need to ask more than once, or ask about more than one person or game, to get the full picture? If yes, it's statistical.</p>
+      <p class="lead">Here's a real scenario. Imagine you're a stats reporter covering the Riverside Hawks basketball team, and your editor asks for a story about "how good the team's shooting is." That's too vague to actually investigate — first you have to turn it into a real, testable question. Let's check a few candidates.</p>
       <div class="compare">
-        <div class="col not"><span class="badge">NOT statistical</span><p>"How tall is Maya?"</p><small>Just one answer.</small></div>
-        <div class="col yes"><span class="badge">Statistical</span><p>"How tall are the players on the team?"</p><small>Lots of different answers.</small></div>
+        <div class="col not"><span class="badge">NOT statistical</span><p>"How tall is Maya?"</p><small>Just one answer — there's only one Maya, and she's only one height.</small></div>
+        <div class="col yes"><span class="badge">Statistical</span><p>"How tall are the players on the team?"</p><small>Every player is a different height, so the answers vary.</small></div>
       </div>
       <div class="compare">
-        <div class="col not"><span class="badge">NOT statistical</span><p>"How many home runs did the team hit last night?"</p><small>One game, one number.</small></div>
-        <div class="col yes"><span class="badge">Statistical</span><p>"How many home runs does the team hit per game this season?"</p><small>Changes game to game.</small></div>
+        <div class="col not"><span class="badge">NOT statistical</span><p>"How many home runs did the team hit last night?"</p><small>One specific game — one specific number.</small></div>
+        <div class="col yes"><span class="badge">Statistical</span><p>"How many home runs does the team hit per game this season?"</p><small>Changes from game to game — you'd need every game's data to fully answer it.</small></div>
       </div>
+      <div class="compare">
+        <div class="col not"><span class="badge">NOT statistical</span><p>"How many total points did Diego score this season?"</p><small>Sounds big, but once the season's over it's still just ONE number.</small></div>
+        <div class="col yes"><span class="badge">Statistical</span><p>"How many points does Diego score per game?"</p><small>Different every game — that's the variety a statistical question needs.</small></div>
+      </div>
+      <p class="lead">So the story your editor really wants isn't "how good is the team's shooting" — it's something like "what percent of shots does the team make, game to game?" That version is statistical: it changes from game to game, which means there's real data behind it worth collecting and describing.</p>
       <p class="tip">Coach tip: statistical questions are usually about a <b>group</b>, and you expect <b>variety</b> in the answers. Watch out for "total" questions — they sound big, but they still have only one answer.</p>`
   },
   graphs:{
@@ -286,17 +291,23 @@ Object.assign(SKILLS, {
     gen:genDotPlot,
     coach:`
       <p class="lead">A <b>dot plot</b> lists every possible value along the bottom (like 0, 1, 2, 3 goals) and stacks one dot above it every time that value shows up. The <b>tallest stack</b> is the most common result — you can see a whole season's worth of games at a glance instead of reading through a long list of numbers.</p>
+      <p class="lead">Let's build one from scratch. Diego's coach tracked his goals in the team's first 9 games: 1, 0, 2, 1, 1, 3, 0, 1, 2. That's a wall of numbers — hard to make sense of at a glance. A dot plot turns it into a picture.</p>
       <div class="whiteboard">
         <div class="wb-title">Diego's goals in 9 games</div>
         <div class="wb-data">1, 0, 2, 1, 1, 3, 0, 1, 2</div>
         ${dotPlotHTML({0:2,1:4,2:2,3:1},0,3,true)}
-        <div class="wb-row">Most common: <b>1 goal</b> (tallest stack) &nbsp;•&nbsp; Highest 3, lowest 0 → range = <b>3</b></div>
+        <div class="wb-row">Step 1 — go through the list in order, and for every game, add one dot above that many goals.</div>
+        <div class="wb-row">Step 2 — find the tallest stack: that's <b>1 goal</b>, with 4 dots — Diego's most common game.</div>
+        <div class="wb-row">Step 3 — range = highest − lowest = 3 − 0 = <b>3</b>.</div>
       </div>
+      <p class="lead">Now a trickier read: instead of just the tallest stack, we'll count how many games clear a threshold — a common dot-plot question once you've got the basics down.</p>
       <div class="whiteboard">
         <div class="wb-title">Priya's hits in 8 games</div>
         <div class="wb-data">2, 1, 0, 1, 2, 1, 3, 1</div>
         ${dotPlotHTML({0:1,1:4,2:2,3:1},0,3,true)}
-        <div class="wb-row">Most common: <b>1 hit</b> (tallest stack) &nbsp;•&nbsp; Highest 3, lowest 0 → range = <b>3</b></div>
+        <div class="wb-row">Question: in how many games did Priya get AT LEAST 2 hits?</div>
+        <div class="wb-row">Step 1 — find every stack at 2 or higher: the "2" column (2 dots) and the "3" column (1 dot).</div>
+        <div class="wb-row">Step 2 — add those counts: 2 + 1 = <b>3</b> games.</div>
       </div>
       <p class="tip">Coach tip: have him point at the tallest stack first, then read left-to-right. Once that's easy, the dots can stand for fractions of a mile instead of whole numbers — same idea, just add them up.</p>`
   },
@@ -308,17 +319,22 @@ Object.assign(SKILLS, {
     gen:genMeanMedian,
     coach:`
       <p class="lead">Both <b>mean</b> and <b>median</b> describe a whole list of numbers using just one "typical" value — they just get there differently. <b>Mean</b> (the average) = add up every value, then divide by how many values there are. <b>Median</b> = line the values up from smallest to largest and pick the one in the middle. They're usually close together — but not always, and that's exactly when it matters which one you use.</p>
+      <p class="lead">Let's find both for a real week of basketball: over 5 games, a player scored 8, 10, 9, 11, and 12 points.</p>
       <div class="whiteboard">
-        <div class="wb-row">Normal games: <span style="font-family:var(--mono)">8, 10, 9, 11, 12</span></div>
-        <div class="wb-calc">Mean = 50 ÷ 5 = <b>10</b> &nbsp;•&nbsp; Median = <b>10</b></div>
-        <div class="wb-row hot">With one huge game: <span style="font-family:var(--mono)">8, 10, 9, 11, 40</span></div>
-        <div class="wb-calc">Mean = 78 ÷ 5 = <b>15.6</b> &nbsp;•&nbsp; Median = <b>10</b></div>
+        <div class="wb-row">Step 1 — MEAN: add every value. 8 + 10 + 9 + 11 + 12 = 50.</div>
+        <div class="wb-calc">Step 2 — divide by how many games (5): 50 ÷ 5 = <b>10</b></div>
+        <div class="wb-row">Step 3 — MEDIAN: sort from smallest to largest: 8, 9, 10, 11, 12.</div>
+        <div class="wb-calc">Step 4 — pick the middle value: <b>10</b></div>
+        ${numberLineHTML([8,10,9,11,12], [{value:10,label:'Mean & Median = 10',color:'var(--cyan)'}], 6, 14)}
+        <div class="wb-row">Mean and median land on the exact same spot here — that happens when the games are all fairly close together.</div>
       </div>
+      <p class="lead">Now watch what happens when one game is way bigger than the rest. A single huge outlier can drag the mean far away from what a "typical" game actually looked like — but the median barely notices.</p>
       <div class="whiteboard">
-        <div class="wb-row">Normal week: <span style="font-family:var(--mono)">3, 4, 2, 3, 3</span> goals</div>
-        <div class="wb-calc">Mean = 15 ÷ 5 = <b>3</b> &nbsp;•&nbsp; Median = <b>3</b></div>
-        <div class="wb-row hot">With a hat-trick game: <span style="font-family:var(--mono)">3, 4, 2, 3, 9</span> goals</div>
-        <div class="wb-calc">Mean = 21 ÷ 5 = <b>4.2</b> &nbsp;•&nbsp; Median = <b>3</b></div>
+        <div class="wb-row">Same player, but one game he got hot: <span style="font-family:var(--mono)">8, 10, 9, 11, 40</span></div>
+        <div class="wb-row">Step 1 — MEAN: 8 + 10 + 9 + 11 + 40 = 78. Divide by 5: 78 ÷ 5 = <b>15.6</b></div>
+        <div class="wb-row">Step 2 — MEDIAN: sorted, 8, 9, 10, 11, 40 → the middle value is still <b>10</b></div>
+        ${numberLineHTML([8,10,9,11,40], [{value:15.6,label:'Mean=15.6',color:'var(--orange)'},{value:10,label:'Median=10',color:'var(--cyan)'}], 6, 42)}
+        <div class="wb-row">The mean (15.6) got pulled way up by that one 40-point game — but the median (10) barely moved, because it only cares about the middle <i>position</i>, not how big the outlier is. To describe a "typical" night for this player, the median is the more honest number.</div>
       </div>
       <p class="tip">Coach tip: when one game is way bigger (an <b>outlier</b>), the <b>median</b> describes a normal night better. Later levels use decimals, like shooting percentages.</p>`
   },
@@ -330,10 +346,18 @@ Object.assign(SKILLS, {
     gen:genSpread,
     coach:`
       <p class="lead">The <b>mean</b> tells you what's typical, but it doesn't tell you how <b>consistent</b> someone is. Two players can have the exact same average and still be totally different to watch — one boring and steady, one wild and streaky. <b>Range (highest − lowest)</b> is the simplest way to measure that spread: a small range means steady, a big range means streaky.</p>
+      <p class="lead">Picture two players who both average exactly 10 points a game. Which one would you rather have taking the last shot?</p>
       <div class="whiteboard">
-        <div class="wb-row"><span style="font-family:var(--mono)">Player A: 10, 11, 9, 10, 10</span> → mean 10, range <b>2</b> (steady)</div>
-        <div class="wb-row"><span style="font-family:var(--mono)">Player B: 2, 18, 4, 16, 10</span> → mean 10, range <b>16</b> (streaky)</div>
+        <div class="wb-row"><span style="font-family:var(--mono)">Player A: 10, 11, 9, 10, 10</span></div>
+        ${numberLineHTML([10,11,9,10,10], [{value:10,label:'Mean=10',color:'var(--cyan)'}], 0, 20)}
+        <div class="wb-row">Mean = 50 ÷ 5 = 10. Range = 11 − 9 = <b>2</b> — every single game landed close to the average.</div>
       </div>
+      <div class="whiteboard">
+        <div class="wb-row"><span style="font-family:var(--mono)">Player B: 2, 18, 4, 16, 10</span></div>
+        ${numberLineHTML([2,18,4,16,10], [{value:10,label:'Mean=10',color:'var(--cyan)'}], 0, 20)}
+        <div class="wb-row">Mean = 50 ÷ 5 = 10. Range = 18 − 2 = <b>16</b> — huge nights mixed with ice-cold ones.</div>
+      </div>
+      <p class="lead">Same exact average, completely different reliability. That's exactly why scouts and coaches never look at the mean alone — the spread tells a different, equally important part of the story.</p>
       <div class="whiteboard">
         <div class="wb-row"><span style="font-family:var(--mono)">Hitter C: 1, 2, 1, 2, 2</span> hits → mean 1.6, range <b>1</b> (steady)</div>
         <div class="wb-row"><span style="font-family:var(--mono)">Hitter D: 0, 4, 0, 3, 1</span> hits → mean 1.6, range <b>4</b> (streaky)</div>
