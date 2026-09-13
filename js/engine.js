@@ -15,10 +15,100 @@ const state = {
    shared difficulty dial (up on correct, down on wrong) across a random skill
    drawn from every domain each question — unlike regular Play, which tracks
    each skill's level separately and stays within one domain. */
-const TEST_LENGTH = 12;
+const TEST_LENGTH = 30;
 
 const HISTORY_CAP = 500;      // bounds localStorage growth from per-question logging
 const TESTSESSIONS_CAP = 20;
+
+/* ---------- Math Score: an adaptive ability estimate for Test Mode ----------
+   Modeled on how NWEA MAP computes a RIT score — not an equated or validated
+   clone of it (there's no norm sample behind this), just the same underlying
+   idea: every item has a difficulty, every response updates a running ability
+   estimate by how much that response beat or missed the odds implied by the
+   gap between ability and that item's difficulty, and the update shrinks as
+   more responses accumulate so the estimate settles instead of oscillating.
+
+   Difficulty comes from two things already in the data: which grade(s) a
+   skill's CCSS standard names (parsed out of c.std, e.g. "6.RP.A.1" -> 6),
+   and how far into that skill's own level range (1..maxLevel) the question
+   sits. A skill whose standard spans two grades (e.g. "5.MD.B.2 → 6.SP.B.4")
+   is treated as sliding from the lower grade at level 1 to the higher grade
+   at maxLevel. Those fractional "grade equivalents" are then placed on a
+   fixed RIT-like number line via GRADE_RIT_ANCHORS. */
+const GRADE_RIT_ANCHORS = [ // illustrative anchors, not real NWEA norms
+  { grade:4, rit:195 },
+  { grade:5, rit:205 },
+  { grade:6, rit:213 },
+  { grade:7, rit:219 }
+];
+function gradeToRIT(g){
+  const A = GRADE_RIT_ANCHORS;
+  if(g <= A[0].grade){
+    const slope = (A[1].rit-A[0].rit)/(A[1].grade-A[0].grade);
+    return A[0].rit + slope*(g-A[0].grade);
+  }
+  for(let i=0;i<A.length-1;i++){
+    if(g>=A[i].grade && g<=A[i+1].grade){
+      const t=(g-A[i].grade)/(A[i+1].grade-A[i].grade);
+      return A[i].rit + t*(A[i+1].rit-A[i].rit);
+    }
+  }
+  const a=A[A.length-2], b=A[A.length-1];
+  const slope=(b.rit-a.rit)/(b.grade-a.grade);
+  return b.rit + slope*(g-b.grade);
+}
+function ritToGrade(rit){
+  const A = GRADE_RIT_ANCHORS;
+  if(rit <= A[0].rit){
+    const slope=(A[1].grade-A[0].grade)/(A[1].rit-A[0].rit);
+    return A[0].grade + slope*(rit-A[0].rit);
+  }
+  for(let i=0;i<A.length-1;i++){
+    if(rit>=A[i].rit && rit<=A[i+1].rit){
+      const t=(rit-A[i].rit)/(A[i+1].rit-A[i].rit);
+      return A[i].grade + t*(A[i+1].grade-A[i].grade);
+    }
+  }
+  const a=A[A.length-2], b=A[A.length-1];
+  const slope=(b.grade-a.grade)/(b.rit-a.rit);
+  return b.grade + slope*(rit-b.rit);
+}
+function gradeLabel(g){
+  const gr = Math.max(3, Math.min(8, Math.floor(g)));
+  const frac = g-Math.floor(g);
+  const part = frac<0.34 ? 'early' : frac<0.67 ? 'mid' : 'late';
+  const ord = {3:'3rd',4:'4th',5:'5th',6:'6th',7:'7th',8:'8th'}[gr];
+  return `${part} ${ord}-grade level`;
+}
+
+/* Grades a skill's standard names, e.g. "5.MD.B.2 → 6.SP.B.4" -> [5,6]. */
+function parseGradeRange(std){
+  const found = Array.from(new Set((std.match(/\b[4-9](?=\.)/g)||[]).map(Number)));
+  if(!found.length) return [6,6];
+  return [Math.min(...found), Math.max(...found)];
+}
+/* Most skills carry a single grade in their standard (e.g. "6.RP.A.1" stays
+   grade 6 at every level), so without this a skill's own level 1..maxLevel
+   escalation — bigger numbers, messier fractions — would be invisible to the
+   difficulty model. LEVEL_SPREAD adds a modest same-skill difficulty ramp
+   (half a grade-equivalent, tuned to sit well under the size of a real
+   cross-grade jump) on top of whatever grade range the standard itself spans. */
+const LEVEL_SPREAD = 0.5;
+function itemDifficultyRIT(c, level){
+  const [lo,hi] = parseGradeRange(c.std);
+  const frac = c.maxLevel<=1 ? 0 : (level-1)/(c.maxLevel-1);
+  const grade = lo + (hi-lo)*frac + LEVEL_SPREAD*frac;
+  return gradeToRIT(grade);
+}
+
+const RIT_START = 205;        // initial ability estimate — the grade-5 anchor, roughly the curriculum's center of gravity
+const RIT_SENSITIVITY = 12;   // RIT points per logistic "logit" — how sharply P(correct) responds to the ability/difficulty gap
+const RIT_K_START = 24;       // update step size on question 1 — large because nothing is known yet
+const RIT_K_MIN = 4;          // update step size floor by the last question — keeps the estimate settling, not oscillating
+const RIT_CLAMP = [150, 260]; // sanity bounds so one wild early swing can't send the estimate somewhere nonsensical
+
+function probCorrect(theta, difficulty){ return 1/(1+Math.exp(-(theta-difficulty)/RIT_SENSITIVITY)); }
+function kFactor(index, total){ const t = index/((total-1)||1); return RIT_K_START + (RIT_K_MIN-RIT_K_START)*t; }
 
 /* One line per top-level category shown on the home screen — keep this at 6
    or fewer so the home screen stays scannable as more skills get added. */
@@ -192,7 +282,7 @@ function pickSkillForTest(){
 
 function startTest(){
   state.view='test';
-  state.test = { level:1, index:0, correct:0, results:[] };
+  state.test = { level:1, index:0, correct:0, results:[], theta:RIT_START };
   state.skill = pickSkillForTest();
   state.problem = null; state.answered = false;
   render();
@@ -214,9 +304,15 @@ function testAnswer(correct){
   if(state.answered) return;
   state.correct = correct;
   const c = SKILLS[state.skill];
+  const lvl = Math.min(state.test.level, c.maxLevel); // the level this question was actually generated at
+  const difficulty = itemDifficultyRIT(c, lvl);
+  const expected = probCorrect(state.test.theta, difficulty);
+  const k = kFactor(state.test.index, TEST_LENGTH);
+  state.test.theta += k * ((correct?1:0) - expected);
+  state.test.theta = Math.max(RIT_CLAMP[0], Math.min(RIT_CLAMP[1], state.test.theta));
   if(correct){ state.score++; state.streak++; state.test.correct++; state.test.level = Math.min(4, state.test.level+1); }
   else { state.streak = 0; state.test.level = Math.max(1, state.test.level-1); }
-  state.test.results.push({ domain:c.domain, skill:state.skill, title:c.title, correct });
+  state.test.results.push({ domain:c.domain, skill:state.skill, title:c.title, correct, difficulty });
   logAttempt({ mode:'test', domain:c.domain, skill:state.skill, title:c.title, correct });
   state.answered = true;
   render();
@@ -229,7 +325,12 @@ function finishTest(){
     byDomain[r.domain].attempts++;
     if(r.correct) byDomain[r.domain].correct++;
   });
-  const session = { ts:Date.now(), correct:state.test.correct, total:TEST_LENGTH, byDomain };
+  const mapScore = Math.round(state.test.theta);
+  const errorBand = Math.round(40/Math.sqrt(TEST_LENGTH)); // shrinks with more questions, like a real CAT's standard error
+  const session = {
+    ts:Date.now(), correct:state.test.correct, total:TEST_LENGTH, byDomain,
+    mapScore, errorBand, gradeEquiv: ritToGrade(mapScore)
+  };
   state.testSessions.push(session);
   if(state.testSessions.length > TESTSESSIONS_CAP) state.testSessions.splice(0, state.testSessions.length - TESTSESSIONS_CAP);
   saveProgress();
@@ -251,9 +352,11 @@ function renderTestResults(){
     </div>
     <div class="panel">
       <div class="statrow">
+        <div class="stattile wide"><div class="n">${s.mapScore} <span class="pm">± ${s.errorBand}</span></div><div class="lab">Math Score — ${esc(gradeLabel(s.gradeEquiv))}</div></div>
         <div class="stattile"><div class="n">${s.correct}/${s.total}</div><div class="lab">Score</div></div>
         <div class="stattile"><div class="n">${pct}%</div><div class="lab">Accuracy</div></div>
       </div>
+      <p class="tip">The Math Score weighs <b>which</b> questions you got right, not just how many — missing a hard one costs less than missing an easy one, and it moves less as the test goes on, the way a real adaptive placement test settles on an estimate.</p>
       <div class="reportdomain"><h3>By category</h3>${domainRows}</div>
       <div class="cardrow">
         <button class="go" data-action="open-test">Take another test →</button>
@@ -301,7 +404,8 @@ function renderReport(){
     const pct = Math.round(s.correct/s.total*100);
     const cls = pct>=80 ? 'good' : pct>=50 ? 'warn' : 'bad';
     const date = new Date(s.ts).toLocaleDateString(undefined,{month:'short',day:'numeric'});
-    return `<div class="testsession"><span>${date}</span><span>${s.correct}/${s.total}</span><span class="acc ${cls}">${pct}%</span></div>`;
+    const scoreTag = s.mapScore!==undefined ? `<span class="mapscore">${s.mapScore} ± ${s.errorBand}</span>` : `<span class="mapscore">—</span>`;
+    return `<div class="testsession"><span>${date}</span><span>${s.correct}/${s.total}</span><span class="acc ${cls}">${pct}%</span>${scoreTag}</div>`;
   }).join('') : `<p class="tip">No tests taken yet — Test Mode results will show up here.</p>`;
 
   app.innerHTML = `
