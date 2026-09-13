@@ -218,6 +218,69 @@ function ratioIconsHTML(iconA, countA, labelA, iconB, countB, labelB){
   </div>`;
 }
 
+/* ---------- Coach Mode shared scenario-building helpers ----------
+   Used by js/scenarios/*.js (one file per sport — basketball, baseball,
+   soccer). Kept here rather than duplicated per file since the underlying
+   mechanic is sport-agnostic: build N named candidates with a made/attempted
+   stat line, retry until they're spread out enough that there's always one
+   unambiguous right answer, and scale difficulty by level. */
+function pickNames(n){
+  const pool = [...PLAYERS];
+  const chosen = [];
+  for(let i=0;i<n;i++){
+    const idx = ri(0, pool.length-1);
+    chosen.push(pool[idx]);
+    pool.splice(idx,1);
+  }
+  return chosen;
+}
+
+/* Builds n candidates with a made/attempted stat whose computed percentages
+   are spread out by at least minGap between the "correct" one (highest, for
+   direction:'max', or lowest, for direction:'min') and its closest
+   competitor — so there's always one unambiguous right answer. Bounded
+   retry loop (not an infinite one) since a pathological run of attempts
+   could in principle never satisfy the gap, however unlikely in practice —
+   but pctLo/pctHi/minGap still need to leave enough room to make that
+   genuinely unlikely (see js/scenarios/*.js comments on chosen ranges). */
+function genCandidates(names, attLo, attHi, pctLo, pctHi, minGap, direction){
+  let best = null;
+  for(let tries=0; tries<300; tries++){
+    const cands = names.map(name=>{
+      const attempted = ri(attLo, attHi);
+      const targetPct = ri(pctLo, pctHi);
+      const made = Math.max(0, Math.min(attempted, Math.round(attempted*targetPct/100)));
+      return { name, attempted, made };
+    });
+    const withPct = cands.map(c => ({ ...c, pct: (c.made/c.attempted)*100 }));
+    const order = [...withPct].sort((a,b)=> direction==='max' ? b.pct-a.pct : a.pct-b.pct);
+    const margin = direction==='max' ? order[0].pct-order[1].pct : order[1].pct-order[0].pct;
+    if(margin >= minGap){
+      const answer = cands.findIndex(c=>c.name===order[0].name);
+      return { candidates: cands, answer };
+    }
+    best = cands;
+  }
+  return { candidates: best, answer: 0 }; // extremely unlikely fallback, never leaves candidates undefined
+}
+
+function statLines(candidates, unit){
+  return candidates.map(c=>`${c.name} ${c.made}/${c.attempted} (${Math.round(c.made/c.attempted*100)}% ${unit})`).join(', ');
+}
+
+/* Candidate count grows and the required percentage gap shrinks as level
+   increases, making the right answer harder to spot at higher levels.
+   attRanges supplies four [lo,hi] pairs for the volume denominator
+   (shot attempts, at-bats, passes...) since realistic sample sizes vary a
+   lot by stat — a season of at-bats is a much bigger number than a game of
+   free-throw attempts. */
+function scenarioLevelParams(level, attRanges){
+  const n = level<=2 ? 3 : 4;
+  const minGap = level===1 ? 15 : level===2 ? 10 : level===3 ? 6 : 3;
+  const [attLo, attHi] = attRanges[Math.min(level,4)-1];
+  return { n, attLo, attHi, minGap };
+}
+
 /* ---------- Progress Report meter ----------
    Color signals status (good/warn/bad) but the % and fraction are always
    shown as text too, so the meter never relies on color alone. */

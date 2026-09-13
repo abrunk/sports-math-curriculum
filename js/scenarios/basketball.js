@@ -8,57 +8,13 @@
    Kept as a separate SCENARIOS registry (not merged into SKILLS) so scenario
    ids can never collide with skill ids in state.levels, and so Coach Mode's
    render path can stay fully independent of the domain-play code in
-   js/engine.js. Loaded after js/helpers.js (needs PLAYERS/ri/rnd), before
+   js/engine.js. Loaded after js/helpers.js (needs PLAYERS/ri/rnd and the
+   shared pickNames/genCandidates/statLines/scenarioLevelParams), before
    js/engine.js. */
 
-function pickNames(n){
-  const pool = [...PLAYERS];
-  const chosen = [];
-  for(let i=0;i<n;i++){
-    const idx = ri(0, pool.length-1);
-    chosen.push(pool[idx]);
-    pool.splice(idx,1);
-  }
-  return chosen;
-}
-
-/* Builds n candidates with a made/attempted stat whose computed percentages
-   are spread out by at least minGap between the "correct" one (highest, for
-   direction:'max', or lowest, for direction:'min') and its closest
-   competitor — so there's always one unambiguous right answer. Bounded
-   retry loop (not an infinite one) since a pathological run of attempts
-   could in principle never satisfy the gap, however unlikely in practice. */
-function genCandidates(names, attLo, attHi, pctLo, pctHi, minGap, direction){
-  let best = null;
-  for(let tries=0; tries<300; tries++){
-    const cands = names.map(name=>{
-      const attempted = ri(attLo, attHi);
-      const targetPct = ri(pctLo, pctHi);
-      const made = Math.max(0, Math.min(attempted, Math.round(attempted*targetPct/100)));
-      return { name, attempted, made };
-    });
-    const withPct = cands.map(c => ({ ...c, pct: (c.made/c.attempted)*100 }));
-    const order = [...withPct].sort((a,b)=> direction==='max' ? b.pct-a.pct : a.pct-b.pct);
-    const margin = direction==='max' ? order[0].pct-order[1].pct : order[1].pct-order[0].pct;
-    if(margin >= minGap){
-      const answer = cands.findIndex(c=>c.name===order[0].name);
-      return { candidates: cands, answer };
-    }
-    best = cands;
-  }
-  return { candidates: best, answer: 0 }; // extremely unlikely fallback, never leaves candidates undefined
-}
-
-function levelParams(level){
-  if(level===1) return { n:3, attLo:10, attHi:30, minGap:15 };
-  if(level===2) return { n:3, attLo:20, attHi:50, minGap:10 };
-  if(level===3) return { n:4, attLo:30, attHi:70, minGap:6 };
-  return { n:4, attLo:40, attHi:100, minGap:3 };
-}
-
-function statLines(candidates, unit){
-  return candidates.map(c=>`${c.name} ${c.made}/${c.attempted} (${Math.round(c.made/c.attempted*100)}% ${unit})`).join(', ');
-}
+/* Attempts ranges read as "shots taken" — a single game for hot-hand, a
+   season for the rest — so they stay on the small, human-scale end. */
+const BBALL_ATT_RANGES = [ [10,30], [20,50], [30,70], [40,100] ];
 
 /* ---------- Pass For The Win: best season 3PT% ---------- */
 const THREEPT_SITUATIONS = [
@@ -67,7 +23,7 @@ const THREEPT_SITUATIONS = [
   "Last possession of the quarter, and your team needs a three to cut into the lead."
 ];
 function genThreePtScenario(level){
-  const { n, attLo, attHi, minGap } = levelParams(level);
+  const { n, attLo, attHi, minGap } = scenarioLevelParams(level, BBALL_ATT_RANGES);
   const { candidates, answer } = genCandidates(pickNames(n), attLo, attHi, 18, 46, minGap, 'max');
   const best = candidates[answer];
   const bestPct = Math.round(best.made/best.attempted*100);
@@ -87,7 +43,7 @@ const FOUL_SITUATIONS = [
   "Up by 1 in the final seconds — you have to foul to stop the clock and keep it to two points."
 ];
 function genFoulScenario(level){
-  const { n, attLo, attHi, minGap } = levelParams(level);
+  const { n, attLo, attHi, minGap } = scenarioLevelParams(level, BBALL_ATT_RANGES);
   const { candidates, answer } = genCandidates(pickNames(n), attLo, attHi, 55, 92, minGap, 'min');
   const worst = candidates[answer];
   const worstPct = Math.round(worst.made/worst.attempted*100);
@@ -106,7 +62,7 @@ const TECHNICAL_SITUATIONS = [
   "A technical foul gets called on the opposing coach. Any of your players on the floor can take the free throw."
 ];
 function genTechnicalScenario(level){
-  const { n, attLo, attHi, minGap } = levelParams(level);
+  const { n, attLo, attHi, minGap } = scenarioLevelParams(level, BBALL_ATT_RANGES);
   const { candidates, answer } = genCandidates(pickNames(n), attLo, attHi, 55, 92, minGap, 'max');
   const best = candidates[answer];
   const bestPct = Math.round(best.made/best.attempted*100);
@@ -125,7 +81,7 @@ const HOTFINISH_SITUATIONS = [
   "Score's tied with one possession left. Forget the season averages — who's actually got it going tonight?"
 ];
 function genHotFinishScenario(level){
-  const { n, attLo, attHi, minGap } = levelParams(level);
+  const { n, attLo, attHi, minGap } = scenarioLevelParams(level, BBALL_ATT_RANGES);
   // tonight's attempts are a single game, so keep the range smaller regardless of level
   const gameAttLo = Math.max(3, Math.round(attLo/4)), gameAttHi = Math.max(gameAttLo+3, Math.round(attHi/4));
   const { candidates, answer } = genCandidates(pickNames(n), gameAttLo, gameAttHi, 20, 70, minGap, 'max');
