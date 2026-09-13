@@ -7,8 +7,18 @@ const state = {
   score:0, streak:0, levels:{},
   view:'home',
   domain:null, skill:null, scenarioKey:null,
-  problem:null, answered:false, correct:false, userAnswer:null
+  problem:null, answered:false, correct:false, userAnswer:null,
+  history:[], testSessions:[], test:null, lastTestSession:null, confirmClear:false
 };
+
+/* Test Mode: a fixed-length quiz that starts at level 1 and moves as a single
+   shared difficulty dial (up on correct, down on wrong) across a random skill
+   drawn from every domain each question — unlike regular Play, which tracks
+   each skill's level separately and stays within one domain. */
+const TEST_LENGTH = 12;
+
+const HISTORY_CAP = 500;      // bounds localStorage growth from per-question logging
+const TESTSESSIONS_CAP = 20;
 
 /* One line per top-level category shown on the home screen — keep this at 6
    or fewer so the home screen stays scannable as more skills get added. */
@@ -61,12 +71,27 @@ function loadProgress(){
       if(d && typeof d === 'object'){
         state.levels = d.levels || {};
         state.score = d.score || 0;
+        state.history = d.history || [];
+        state.testSessions = d.testSessions || [];
       }
     }
   }catch(e){ /* localStorage unavailable — progress just won't persist */ }
 }
 function saveProgress(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({levels:state.levels, score:state.score})); }catch(e){}
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      levels:state.levels, score:state.score, history:state.history, testSessions:state.testSessions
+    }));
+  }catch(e){}
+}
+
+/* Records one answered question (Play, Coach, or Test) for the Progress
+   Report. Capped so an iPad that's been played on for months doesn't grow
+   localStorage without bound. */
+function logAttempt(rec){
+  state.history.push(Object.assign({ ts:Date.now() }, rec));
+  if(state.history.length > HISTORY_CAP) state.history.splice(0, state.history.length - HISTORY_CAP);
+  saveProgress();
 }
 
 /* ---------- rendering ---------- */
@@ -78,6 +103,9 @@ function render(){
   if(state.view==='home'){ renderHome(); return; }
   if(state.view==='learn'){ renderLearnView(); return; }
   if(state.view==='coach'){ renderCoachPlay(); return; }
+  if(state.view==='test'){ renderTestPlay(); return; }
+  if(state.view==='testresults'){ renderTestResults(); return; }
+  if(state.view==='report'){ renderReport(); return; }
   renderDomainPlay();
 }
 
@@ -110,7 +138,16 @@ function renderHome(){
         <p>You're the coach. Read the situation, check the stats, make the call.</p>
       </div>
       <span class="go">Play →</span>
-    </button>`;
+    </button>
+    <button class="testbanner" data-action="open-test">
+      <div class="icon">📝</div>
+      <div class="body">
+        <h2>Test Mode</h2>
+        <p>${TEST_LENGTH} questions, mixed from every category. Starts easy, gets harder if you're on a roll.</p>
+      </div>
+      <span class="go">Start →</span>
+    </button>
+    <button class="reportlink" data-action="open-report">📋 Progress report (for grown-ups)</button>`;
 }
 
 /* One consolidated instructional page per category — combines every skill's
@@ -143,11 +180,150 @@ function renderDomainPlay(){
       <h2>${esc(state.domain)}</h2>
       <span class="lvlpill">${esc(c.title)} · Lv ${lvl}/${c.maxLevel}</span>
     </div>
-    ${renderPlay(c)}`;
+    ${renderPlay(c, lvl)}`;
 }
 
-function renderPlay(c){
-  if(!state.problem){ state.problem = c.gen(getLevel(state.skill)); state.answered=false; }
+/* ---------- Test Mode: fixed-length quiz, one shared difficulty dial,
+   a random skill from ANY domain each question ---------- */
+function pickSkillForTest(){
+  const keys = Object.keys(SKILLS);
+  return keys[ri(0, keys.length-1)];
+}
+
+function startTest(){
+  state.view='test';
+  state.test = { level:1, index:0, correct:0, results:[] };
+  state.skill = pickSkillForTest();
+  state.problem = null; state.answered = false;
+  render();
+}
+
+function renderTestPlay(){
+  const c = SKILLS[state.skill];
+  const lvl = Math.min(state.test.level, c.maxLevel);
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" data-action="home">← Exit test</button>
+      <h2>Test Mode</h2>
+      <span class="lvlpill">Question ${state.test.index+1}/${TEST_LENGTH} · Lv ${lvl}</span>
+    </div>
+    ${renderPlay(c, lvl)}`;
+}
+
+function testAnswer(correct){
+  if(state.answered) return;
+  state.correct = correct;
+  const c = SKILLS[state.skill];
+  if(correct){ state.score++; state.streak++; state.test.correct++; state.test.level = Math.min(4, state.test.level+1); }
+  else { state.streak = 0; state.test.level = Math.max(1, state.test.level-1); }
+  state.test.results.push({ domain:c.domain, skill:state.skill, title:c.title, correct });
+  logAttempt({ mode:'test', domain:c.domain, skill:state.skill, title:c.title, correct });
+  state.answered = true;
+  render();
+}
+
+function finishTest(){
+  const byDomain = {};
+  state.test.results.forEach(r=>{
+    byDomain[r.domain] = byDomain[r.domain] || { correct:0, attempts:0 };
+    byDomain[r.domain].attempts++;
+    if(r.correct) byDomain[r.domain].correct++;
+  });
+  const session = { ts:Date.now(), correct:state.test.correct, total:TEST_LENGTH, byDomain };
+  state.testSessions.push(session);
+  if(state.testSessions.length > TESTSESSIONS_CAP) state.testSessions.splice(0, state.testSessions.length - TESTSESSIONS_CAP);
+  saveProgress();
+  state.lastTestSession = session;
+  state.test = null;
+  state.view = 'testresults';
+  render();
+}
+
+function renderTestResults(){
+  const s = state.lastTestSession;
+  const pct = Math.round(s.correct/s.total*100);
+  const domainRows = Object.entries(s.byDomain).map(([d,v])=>`
+    <div class="reportrow"><span class="name">${esc(d)}</span>${meterHTML(v.correct, v.attempts)}</div>`).join('');
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" data-action="home">← All categories</button>
+      <h2>Test Results</h2>
+    </div>
+    <div class="panel">
+      <div class="statrow">
+        <div class="stattile"><div class="n">${s.correct}/${s.total}</div><div class="lab">Score</div></div>
+        <div class="stattile"><div class="n">${pct}%</div><div class="lab">Accuracy</div></div>
+      </div>
+      <div class="reportdomain"><h3>By category</h3>${domainRows}</div>
+      <div class="cardrow">
+        <button class="go" data-action="open-test">Take another test →</button>
+        <button class="back" data-action="home">Back home</button>
+      </div>
+    </div>`;
+}
+
+/* ---------- Progress Report (parent-facing) ---------- */
+function aggregateHistory(mode){
+  const map = {};
+  state.history.forEach(h=>{
+    if(h.mode!==mode) return;
+    map[h.skill] = map[h.skill] || { title:h.title, domain:h.domain, correct:0, attempts:0 };
+    map[h.skill].attempts++;
+    if(h.correct) map[h.skill].correct++;
+  });
+  return map;
+}
+
+function renderReport(){
+  const playMap = aggregateHistory('play');
+  const coachMap = aggregateHistory('coach');
+  const totalAttempts = state.history.length;
+  const totalCorrect = state.history.filter(h=>h.correct).length;
+  const overallPct = totalAttempts ? Math.round(totalCorrect/totalAttempts*100) : 0;
+
+  const playSections = Object.keys(DOMAIN_META).map(d=>{
+    const skillsInDomain = Object.entries(SKILLS).filter(([,c])=>c.domain===d);
+    if(!skillsInDomain.length) return '';
+    const rows = skillsInDomain.map(([key,c])=>{
+      const m = playMap[key] || { correct:0, attempts:0 };
+      return `<div class="reportrow"><span class="name">${esc(c.title)}</span>${meterHTML(m.correct, m.attempts)}<span class="lvltag">Lv ${getLevel(key)}/${c.maxLevel}</span></div>`;
+    }).join('');
+    return `<div class="reportdomain"><h3>${esc(d)}</h3>${rows}</div>`;
+  }).join('');
+
+  const coachRows = Object.entries(SCENARIOS).map(([key,c])=>{
+    const m = coachMap['coach_'+key] || { correct:0, attempts:0 };
+    return `<div class="reportrow"><span class="name">${esc(c.title)}</span>${meterHTML(m.correct, m.attempts)}</div>`;
+  }).join('');
+
+  const sessions = state.testSessions.slice().reverse().slice(0,10);
+  const sessionRows = sessions.length ? sessions.map(s=>{
+    const pct = Math.round(s.correct/s.total*100);
+    const cls = pct>=80 ? 'good' : pct>=50 ? 'warn' : 'bad';
+    const date = new Date(s.ts).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+    return `<div class="testsession"><span>${date}</span><span>${s.correct}/${s.total}</span><span class="acc ${cls}">${pct}%</span></div>`;
+  }).join('') : `<p class="tip">No tests taken yet — Test Mode results will show up here.</p>`;
+
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" data-action="home">← All categories</button>
+      <h2>Progress Report</h2>
+    </div>
+    <div class="panel">
+      <div class="statrow">
+        <div class="stattile"><div class="n">${totalAttempts}</div><div class="lab">Questions answered</div></div>
+        <div class="stattile"><div class="n">${overallPct}%</div><div class="lab">Overall accuracy</div></div>
+        <div class="stattile"><div class="n">${state.testSessions.length}</div><div class="lab">Tests taken</div></div>
+      </div>
+      <div class="reportdomain"><h3>Test Mode history</h3>${sessionRows}</div>
+      ${playSections}
+      <div class="reportdomain"><h3>Coach Mode</h3>${coachRows}</div>
+      <button class="clearhist" data-action="clear-history">${state.confirmClear?'Click again to confirm clear':'Clear report history'}</button>
+    </div>`;
+}
+
+function renderPlay(c, lvl){
+  if(!state.problem){ state.problem = c.gen(lvl); state.answered=false; }
   const p = state.problem;
   const head = `
     ${p.pre?`<div style="color:var(--muted);font-size:14px;margin-bottom:4px">${esc(p.pre)}</div>`:''}
@@ -263,7 +439,7 @@ function updateCoachResult(key, maxLevel, correct){
   let lvl = getLevel(lvlKey);
   lvl = correct ? Math.min(maxLevel, lvl+1) : Math.max(1, lvl-1);
   state.levels[lvlKey] = lvl;
-  saveProgress();
+  logAttempt({ mode:'coach', domain:'Coach Mode', skill:lvlKey, title:SCENARIOS[key].title, correct });
 }
 function coachAnswer(idx){
   if(state.answered) return;
@@ -301,12 +477,15 @@ function feedbackHTML(p){
   const lead = state.correct
     ? `<div class="why">Why: ${p.why}</div>`
     : `<div class="why">The answer is <b>${esc(displayAnswer(p))}</b>. ${p.why}</div>`;
+  const isTest = state.view==='test';
+  const nextAction = isTest ? 'next-test' : 'next';
+  const nextLabel = isTest ? (state.test.index+1>=TEST_LENGTH ? 'See results →' : 'Next question →') : 'Next play →';
   return `${optsBack}
     <div class="feedback ${state.correct?'good':'bad'}">
       <div class="head">${head}</div>
       ${lead}
     </div>
-    <button class="next" data-action="next">Next play →</button>`;
+    <button class="next" data-action="${nextAction}">${nextLabel}</button>`;
 }
 
 /* ---------- scoring & adaptive level ---------- */
@@ -317,15 +496,24 @@ function updateResult(correct){
   let lvl = getLevel(key);
   lvl = correct ? Math.min(c.maxLevel, lvl+1) : Math.max(1, lvl-1);
   state.levels[key] = lvl;
-  saveProgress();
+  logAttempt({ mode:'play', domain:c.domain, skill:key, title:c.title, correct });
 }
 function answer(correct){ if(state.answered) return; updateResult(correct); state.answered=true; render(); }
+
+/* Routes an answered question to regular scoring or Test Mode scoring
+   depending on the current view — every answer control below calls this
+   instead of answer() directly so Test Mode doesn't touch per-skill levels. */
+function submitAnswer(correct){ if(state.view==='test') testAnswer(correct); else answer(correct); }
 
 /* ---------- events ---------- */
 document.addEventListener('click', e=>{
   const el = e.target.closest('[data-action]'); if(!el) return;
   const a = el.dataset.action;
-  if(a==='home'){ state.view='home'; state.domain=null; state.skill=null; state.scenarioKey=null; state.problem=null; state.answered=false; render(); }
+  if(a==='home'){
+    state.view='home'; state.domain=null; state.skill=null; state.scenarioKey=null;
+    state.problem=null; state.answered=false; state.test=null; state.confirmClear=false;
+    render();
+  }
   else if(a==='open-learn'){ state.view='learn'; state.domain=el.dataset.domain; render(); }
   else if(a==='open-domain'){
     state.view='play'; state.domain=el.dataset.domain;
@@ -345,13 +533,13 @@ document.addEventListener('click', e=>{
     state.answered=false;
     render();
   }
-  else if(a==='ans-bool'){ state.userAnswer=(el.dataset.val==='true'); answer(state.userAnswer===state.problem.answer); }
-  else if(a==='ans-choice'){ const i=+el.dataset.idx; state.userAnswer=i; answer(i===state.problem.answer); }
+  else if(a==='ans-bool'){ state.userAnswer=(el.dataset.val==='true'); submitAnswer(state.userAnswer===state.problem.answer); }
+  else if(a==='ans-choice'){ const i=+el.dataset.idx; state.userAnswer=i; submitAnswer(i===state.problem.answer); }
   else if(a==='check'){
     const inp=document.getElementById('numInput'); if(!inp) return;
     const v=inp.value.trim(); if(v===''||isNaN(Number(v))){ inp.focus(); return; }
     state.userAnswer=Number(v);
-    answer(Math.abs(Number(v)-state.problem.answer) < 0.005);
+    submitAnswer(Math.abs(Number(v)-state.problem.answer) < 0.005);
   }
   else if(a==='check-frac'){
     const ni=document.getElementById('numInput'), di=document.getElementById('denInput');
@@ -361,7 +549,7 @@ document.addEventListener('click', e=>{
     if(isNaN(un)||isNaN(ud)||ud===0){ di.focus(); return; }
     state.userAnswer=[un,ud];
     const [an,ad] = state.problem.answer;
-    answer(fracEq(un,ud,an,ad));
+    submitAnswer(fracEq(un,ud,an,ad));
   }
   else if(a==='check-divrem'){
     const qi=document.getElementById('qInput'), rin=document.getElementById('rInput');
@@ -370,7 +558,7 @@ document.addEventListener('click', e=>{
     const uq=Number(qi.value.trim()), ur=Number(rin.value.trim());
     if(isNaN(uq)||isNaN(ur)){ qi.focus(); return; }
     state.userAnswer={q:uq,r:ur};
-    answer(uq===state.problem.answer.q && ur===state.problem.answer.r);
+    submitAnswer(uq===state.problem.answer.q && ur===state.problem.answer.r);
   }
   else if(a==='check-ratio'){
     const ai=document.getElementById('ratioAInput'), bi=document.getElementById('ratioBInput');
@@ -380,7 +568,7 @@ document.addEventListener('click', e=>{
     if(isNaN(ua)||isNaN(ub)||ub===0){ bi.focus(); return; }
     state.userAnswer=[ua,ub];
     const [aa,ab] = state.problem.answer;
-    answer(fracEq(ua,ub,aa,ab));
+    submitAnswer(fracEq(ua,ub,aa,ab));
   }
   else if(a==='check-point'){
     const xi=document.getElementById('xInput'), yi=document.getElementById('yInput');
@@ -390,7 +578,7 @@ document.addEventListener('click', e=>{
     if(isNaN(ux)||isNaN(uy)){ xi.focus(); return; }
     state.userAnswer=[ux,uy];
     const [ax,ay] = state.problem.answer;
-    answer(ux===ax && uy===ay);
+    submitAnswer(ux===ax && uy===ay);
   }
   else if(a==='next'){
     state.skill=pickSkillForDomain(state.domain);
@@ -398,39 +586,56 @@ document.addEventListener('click', e=>{
     state.answered=false;
     render();
   }
+  else if(a==='open-test'){ startTest(); }
+  else if(a==='next-test'){
+    state.test.index++;
+    if(state.test.index >= TEST_LENGTH){ finishTest(); }
+    else{
+      state.skill = pickSkillForTest();
+      const c = SKILLS[state.skill];
+      state.problem = c.gen(Math.min(state.test.level, c.maxLevel));
+      state.answered = false;
+      render();
+    }
+  }
+  else if(a==='open-report'){ state.view='report'; render(); }
+  else if(a==='clear-history'){
+    if(state.confirmClear){ state.history=[]; state.testSessions=[]; state.confirmClear=false; saveProgress(); render(); }
+    else{ state.confirmClear=true; render(); }
+  }
   else if(a==='reset'){ state.score=0; state.streak=0; setLeds(); saveProgress(); }
 });
 
 document.addEventListener('keydown', e=>{
-  if(e.key!=='Enter' || state.view!=='play' || state.answered) return;
+  if(e.key!=='Enter' || (state.view!=='play' && state.view!=='test') || state.answered) return;
   const p = state.problem; if(!p) return;
   if(p.kind==='frac'){
     const ni=document.getElementById('numInput'), di=document.getElementById('denInput');
     if(ni&&di&&ni.value.trim()!==''&&di.value.trim()!==''){
       const un=Number(ni.value.trim()), ud=Number(di.value.trim());
-      if(!isNaN(un)&&!isNaN(ud)&&ud!==0){ state.userAnswer=[un,ud]; answer(fracEq(un,ud,p.answer[0],p.answer[1])); }
+      if(!isNaN(un)&&!isNaN(ud)&&ud!==0){ state.userAnswer=[un,ud]; submitAnswer(fracEq(un,ud,p.answer[0],p.answer[1])); }
     }
   } else if(p.kind==='divrem'){
     const qi=document.getElementById('qInput'), rin=document.getElementById('rInput');
     if(qi&&rin&&qi.value.trim()!==''&&rin.value.trim()!==''){
       const uq=Number(qi.value.trim()), ur=Number(rin.value.trim());
-      if(!isNaN(uq)&&!isNaN(ur)){ state.userAnswer={q:uq,r:ur}; answer(uq===p.answer.q && ur===p.answer.r); }
+      if(!isNaN(uq)&&!isNaN(ur)){ state.userAnswer={q:uq,r:ur}; submitAnswer(uq===p.answer.q && ur===p.answer.r); }
     }
   } else if(p.kind==='ratio'){
     const ai=document.getElementById('ratioAInput'), bi=document.getElementById('ratioBInput');
     if(ai&&bi&&ai.value.trim()!==''&&bi.value.trim()!==''){
       const ua=Number(ai.value.trim()), ub=Number(bi.value.trim());
-      if(!isNaN(ua)&&!isNaN(ub)&&ub!==0){ state.userAnswer=[ua,ub]; answer(fracEq(ua,ub,p.answer[0],p.answer[1])); }
+      if(!isNaN(ua)&&!isNaN(ub)&&ub!==0){ state.userAnswer=[ua,ub]; submitAnswer(fracEq(ua,ub,p.answer[0],p.answer[1])); }
     }
   } else if(p.kind==='point'){
     const xi=document.getElementById('xInput'), yi=document.getElementById('yInput');
     if(xi&&yi&&xi.value.trim()!==''&&yi.value.trim()!==''){
       const ux=Number(xi.value.trim()), uy=Number(yi.value.trim());
-      if(!isNaN(ux)&&!isNaN(uy)){ state.userAnswer=[ux,uy]; answer(ux===p.answer[0] && uy===p.answer[1]); }
+      if(!isNaN(ux)&&!isNaN(uy)){ state.userAnswer=[ux,uy]; submitAnswer(ux===p.answer[0] && uy===p.answer[1]); }
     }
   } else if(p.kind==='num'){
     const inp=document.getElementById('numInput');
-    if(inp){ const v=inp.value.trim(); if(v!==''&&!isNaN(Number(v))){ state.userAnswer=Number(v); answer(Math.abs(Number(v)-p.answer)<0.005); } }
+    if(inp){ const v=inp.value.trim(); if(v!==''&&!isNaN(Number(v))){ state.userAnswer=Number(v); submitAnswer(Math.abs(Number(v)-p.answer)<0.005); } }
   }
 });
 

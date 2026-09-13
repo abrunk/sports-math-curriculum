@@ -92,6 +92,26 @@
   .coachbanner p{color:var(--muted);font-size:14px;margin:0}
   .coachbanner .go{background:var(--violet);color:#1a0a2e;flex-shrink:0}
 
+  /* Test Mode banner — same shape as Coach Mode's, own accent color so the
+     two "beyond the 6 categories" activities read as siblings, not twins. */
+  .testbanner{display:flex;align-items:center;gap:16px;text-align:left;width:100%;
+    background:linear-gradient(135deg, rgba(84,224,122,.14), var(--panel));
+    border:1.5px solid rgba(84,224,122,.4);border-radius:var(--rad);
+    padding:18px 20px;margin-top:14px;cursor:pointer;
+    transition:transform .14s ease,border-color .14s ease;animation:rise .45s ease both}
+  .testbanner:hover{transform:translateY(-4px);border-color:var(--green)}
+  .testbanner .icon{font-size:34px;line-height:1;flex-shrink:0}
+  .testbanner .body{flex:1;min-width:0}
+  .testbanner h2{font-family:var(--display);font-weight:400;letter-spacing:.5px;font-size:22px;margin:0 0 4px;color:var(--green)}
+  .testbanner p{color:var(--muted);font-size:14px;margin:0}
+  .testbanner .go{background:var(--green);color:#04210f;flex-shrink:0}
+
+  /* Parent-facing report link — deliberately understated (dashed, muted),
+     since it's not part of the kid-facing play loop. */
+  .reportlink{display:block;margin:22px auto 0;background:none;border:1px dashed var(--line);color:var(--muted);
+    border-radius:10px;padding:8px 14px;font-family:var(--body);font-size:13px;cursor:pointer}
+  .reportlink:hover{color:var(--text);border-color:var(--muted)}
+
   /* Concept view */
   .topbar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
   .back{background:none;border:1px solid var(--line);color:var(--text);border-radius:10px;
@@ -256,6 +276,33 @@
 
   .attribution{color:var(--muted);font-size:12px;text-align:center;margin:24px 0 0}
   .attribution a{color:var(--muted)}
+
+  /* ---------- Progress Report & Test Results ---------- */
+  .statrow{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+  .stattile{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:14px 20px;min-width:120px}
+  .stattile .n{font-family:var(--mono);font-weight:800;font-size:26px;font-variant-numeric:tabular-nums}
+  .stattile .lab{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+  .reportdomain{margin-bottom:20px}
+  .reportdomain h3{font-family:var(--display);font-weight:400;letter-spacing:.5px;font-size:18px;margin:0 0 8px;color:var(--cyan)}
+  .reportrow{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid var(--line)}
+  .reportrow:last-child{border-bottom:none}
+  .reportrow .name{flex:0 0 180px;font-size:14px;font-weight:600}
+  .reportrow .lvltag{flex:0 0 auto;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .meterwrap{flex:1;display:flex;align-items:center;gap:10px;min-width:80px}
+  .meterbar{flex:1;height:10px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden;min-width:40px}
+  .meterfill{height:100%;border-radius:6px}
+  .meterfill.good{background:var(--green)}
+  .meterfill.warn{background:var(--amber)}
+  .meterfill.bad{background:var(--red)}
+  .metertext{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .metersub{color:var(--muted)}
+  .testsession{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);
+    font-size:14px;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .testsession:last-child{border-bottom:none}
+  .testsession .acc.good{color:var(--green)} .testsession .acc.warn{color:var(--amber)} .testsession .acc.bad{color:var(--red)}
+  .clearhist{margin-top:6px;background:none;border:1px solid var(--line);color:var(--muted);border-radius:10px;
+    padding:8px 14px;font-family:var(--body);font-size:13px;cursor:pointer}
+  .clearhist:hover{color:var(--red);border-color:var(--red)}
   @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
   @keyframes fade{from{opacity:0}to{opacity:1}}
   @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}

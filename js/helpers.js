@@ -217,3 +217,13 @@ function ratioIconsHTML(iconA, countA, labelA, iconB, countB, labelB){
     <div class="ratiorow"><span class="ratioicons">${Array(countB).fill(iconB).join(' ')}</span><span class="ratiolabel">${esc(labelB)}</span></div>
   </div>`;
 }
+
+/* ---------- Progress Report meter ----------
+   Color signals status (good/warn/bad) but the % and fraction are always
+   shown as text too, so the meter never relies on color alone. */
+function meterHTML(correct, attempts){
+  if(!attempts) return `<div class="meterwrap"><div class="meterbar"><div class="meterfill none"></div></div><span class="metertext">Not tried yet</span></div>`;
+  const pct = Math.round(correct/attempts*100);
+  const cls = pct>=80 ? 'good' : pct>=50 ? 'warn' : 'bad';
+  return `<div class="meterwrap"><div class="meterbar"><div class="meterfill ${cls}" style="width:${pct}%"></div></div><span class="metertext">${pct}% <span class="metersub">(${correct}/${attempts})</span></span></div>`;
+}
