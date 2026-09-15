@@ -230,11 +230,15 @@
   .stack .operand{min-width:1ch}
   .stackline{align-self:stretch;border-top:3px solid var(--text);margin-top:6px}
 
-  /* play */
-  .qtext{font-size:19px;line-height:1.5;font-weight:600;margin:6px 0 18px}
+  /* play — sized so the question reads as the dominant text on the card, not
+     smaller than the numbers it's asking about (previously 19px questions
+     sat right underneath 22-30px number displays and read as an afterthought) */
+  .pretext{color:var(--muted);font-size:16px;line-height:1.5;margin-bottom:8px}
+  .datatext{font-family:var(--mono);font-size:25px;font-weight:700;letter-spacing:1px;margin-bottom:16px}
+  .qtext{font-size:23px;line-height:1.45;font-weight:700;margin:10px 0 20px}
   .answers{display:flex;flex-wrap:wrap;gap:12px}
   .opt{flex:1 1 160px;background:var(--bg2);border:1.5px solid var(--line);color:var(--text);
-    border-radius:12px;padding:16px;font-family:var(--body);font-weight:700;font-size:16px;cursor:pointer;
+    border-radius:12px;padding:18px;font-family:var(--body);font-weight:700;font-size:18px;cursor:pointer;
     transition:transform .1s ease,border-color .12s ease,background .12s ease}
   .opt:hover{border-color:var(--orange)} .opt:active{transform:scale(.97)}
   .opt.right{border-color:var(--green);background:rgba(84,224,122,.14)}
@@ -248,19 +252,19 @@
     border-radius:12px;padding:16px;font-family:var(--body);text-align:left;cursor:pointer;
     transition:transform .1s ease,border-color .12s ease,background .12s ease}
   .statcard:hover{border-color:var(--violet)} .statcard:active{transform:scale(.97)}
-  .statcard .name{font-weight:800;font-size:16px;display:block;margin-bottom:6px}
-  .statcard .stat{font-family:var(--mono);font-size:14px;color:var(--muted)}
+  .statcard .name{font-weight:800;font-size:18px;display:block;margin-bottom:6px}
+  .statcard .stat{font-family:var(--mono);font-size:16px;color:var(--muted)}
   .statcard.right{border-color:var(--green);background:rgba(84,224,122,.14)}
   .statcard.wrong{border-color:var(--red);background:rgba(255,93,93,.14)}
   .numrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .numrow input{flex:1;background:var(--bg2);border:1.5px solid var(--line);color:var(--text);
-    border-radius:12px;padding:15px 16px;font-family:var(--mono);font-size:22px;font-weight:700;
+    border-radius:12px;padding:16px;font-family:var(--mono);font-size:25px;font-weight:700;
     outline:none;min-width:0}
   .numrow input:focus{border-color:var(--orange)}
   .fracrow input, .divremrow input{flex:0 1 90px;text-align:center}
   .fracbar{font-size:28px;font-weight:800;color:var(--muted)}
   .check{background:var(--cyan);color:#022a2e;border:none;border-radius:12px;font-weight:800;
-    font-family:var(--body);font-size:16px;padding:15px 22px;cursor:pointer}
+    font-family:var(--body);font-size:18px;padding:16px 24px;cursor:pointer}
   .check:active{transform:scale(.97)}
 
   .feedback{border-radius:12px;padding:16px 18px;margin-top:16px;animation:pop .28s ease both}

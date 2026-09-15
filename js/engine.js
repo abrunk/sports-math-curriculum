@@ -430,8 +430,8 @@ function renderPlay(c, lvl){
   if(!state.problem){ state.problem = c.gen(lvl); state.answered=false; }
   const p = state.problem;
   const head = `
-    ${p.pre?`<div style="color:var(--muted);font-size:14px;margin-bottom:4px">${esc(p.pre)}</div>`:''}
-    ${p.data?`<div style="font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:1px;margin-bottom:12px">${esc(p.data)}</div>`:''}
+    ${p.pre?`<div class="pretext">${esc(p.pre)}</div>`:''}
+    ${p.data?`<div class="datatext">${esc(p.data)}</div>`:''}
     ${p.dotplot?p.dotplot:''}
     ${p.stack?p.stack:''}
     <div class="qtext">${esc(p.question)}</div>`;
@@ -506,7 +506,7 @@ function renderCoachPanel(c){
   if(!state.problem){ state.problem = c.gen(getLevel('coach_'+state.scenarioKey)); state.answered=false; }
   const p = state.problem;
   const head = `
-    <div style="color:var(--muted);font-size:14px;margin-bottom:4px">${esc(p.pre)}</div>
+    <div class="pretext">${esc(p.pre)}</div>
     <div class="qtext">${esc(p.question)}</div>`;
 
   const cards = p.candidates.map((cand,i)=>{
