@@ -123,12 +123,22 @@ const DOMAIN_META = {
 
 function getLevel(key){ return state.levels[key] || 1; }
 
+/* Skills flagged as a known gap by the parent (e.g. "he doesn't know long
+   division yet" even though the adaptive level system hasn't caught up to
+   that fact from in-app answers alone) — these get extra selection weight
+   in both regular Play and Test Mode until removed here. Add/remove skill
+   keys as gaps get closed or new ones are identified. */
+const FOCUS_SKILLS = ['longdivision'];
+const FOCUS_BOOST = 3;
+function focusWeight(key){ return FOCUS_SKILLS.includes(key) ? FOCUS_BOOST : 1; }
+
 /* Weighted pick among a domain's skills — skills further from mastery get
    proportionally more reps, but nothing ever drops to zero chance, so a
-   maxed-out skill still resurfaces occasionally for review. */
+   maxed-out skill still resurfaces occasionally for review. Focus skills
+   get an additional flat multiplier on top of the mastery-gap weighting. */
 function pickSkillForDomain(domain){
   const entries = Object.entries(SKILLS).filter(([,c])=>c.domain===domain);
-  const weights = entries.map(([k,c]) => c.maxLevel - getLevel(k) + 1);
+  const weights = entries.map(([k,c]) => (c.maxLevel - getLevel(k) + 1) * focusWeight(k));
   const total = weights.reduce((a,b)=>a+b,0);
   let r = Math.random()*total;
   for(let i=0;i<entries.length;i++){
@@ -277,7 +287,11 @@ function renderDomainPlay(){
    a random skill from ANY domain each question ---------- */
 function pickSkillForTest(){
   const keys = Object.keys(SKILLS);
-  return keys[ri(0, keys.length-1)];
+  const weights = keys.map(focusWeight);
+  const total = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random()*total;
+  for(let i=0;i<keys.length;i++){ r -= weights[i]; if(r<=0) return keys[i]; }
+  return keys[keys.length-1];
 }
 
 function startTest(){
@@ -389,7 +403,8 @@ function renderReport(){
     if(!skillsInDomain.length) return '';
     const rows = skillsInDomain.map(([key,c])=>{
       const m = playMap[key] || { correct:0, attempts:0 };
-      return `<div class="reportrow"><span class="name">${esc(c.title)}</span>${meterHTML(m.correct, m.attempts)}<span class="lvltag">Lv ${getLevel(key)}/${c.maxLevel}</span></div>`;
+      const focusTag = FOCUS_SKILLS.includes(key) ? `<span class="lvltag focustag">🎯 focus</span>` : '';
+      return `<div class="reportrow"><span class="name">${esc(c.title)}</span>${meterHTML(m.correct, m.attempts)}${focusTag}<span class="lvltag">Lv ${getLevel(key)}/${c.maxLevel}</span></div>`;
     }).join('');
     return `<div class="reportdomain"><h3>${esc(d)}</h3>${rows}</div>`;
   }).join('');
@@ -473,6 +488,14 @@ function renderPlay(c, lvl){
       <span class="fracbar">,</span>
       <input id="yInput" type="text" autocomplete="off" placeholder="y">
       <button class="check" data-action="check-point">Check</button>
+    </div>`;
+  } else if(p.kind==='int'){
+    // no inputmode="numeric" — same reasoning as 'point' above: the iPad's
+    // numeric keypad has no minus key, so a possibly-negative answer needs
+    // the plain keyboard instead.
+    controls = `<div class="numrow">
+      <input id="numInput" type="text" autocomplete="off" placeholder="e.g. -5 or 5">
+      <button class="check" data-action="check">Check</button>
     </div>`;
   } else {
     controls = `<div class="numrow">
@@ -737,7 +760,7 @@ document.addEventListener('keydown', e=>{
       const ux=Number(xi.value.trim()), uy=Number(yi.value.trim());
       if(!isNaN(ux)&&!isNaN(uy)){ state.userAnswer=[ux,uy]; submitAnswer(ux===p.answer[0] && uy===p.answer[1]); }
     }
-  } else if(p.kind==='num'){
+  } else if(p.kind==='num' || p.kind==='int'){
     const inp=document.getElementById('numInput');
     if(inp){ const v=inp.value.trim(); if(v!==''&&!isNaN(Number(v))){ state.userAnswer=Number(v); submitAnswer(Math.abs(Number(v)-p.answer)<0.005); } }
   }

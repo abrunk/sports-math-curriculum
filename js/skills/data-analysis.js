@@ -257,6 +257,61 @@ function genSpread(level){
   return genRangeDecimal();
 }
 
+/* ---------- Basic Probability (7.SP.C.5-8) ----------
+   Unlike the other skills here, this one doesn't coin-flip a "bare" drill
+   variant — probability is defined by its setup, so there's no meaningful
+   context-free version the way "47 + 128" stands alone from a word problem.
+   Container framing (jerseys/marbles/raffle tickets) varies instead for
+   repetition-proofing. */
+const PROB_CONTAINERS = [
+  { itemA:'Cubs jerseys', itemB:'Sox jerseys', pick:'jersey', container:'jersey bin' },
+  { itemA:'red marbles', itemB:'blue marbles', pick:'marble', container:'bag' },
+  { itemA:'winning raffle tickets', itemB:'non-winning raffle tickets', pick:'ticket', container:'drum' }
+];
+function genProbSimple(){
+  const c = rnd(PROB_CONTAINERS);
+  const a = ri(2,8), b = ri(2,8), total=a+b;
+  return { kind:'frac',
+    pre:`A ${c.container} has ${a} ${c.itemA} and ${b} ${c.itemB}, all mixed together.`,
+    question:`If you draw one ${c.pick} at random, what is the probability it's a ${c.itemA.split(' ')[0]} one? (as a fraction)`,
+    answer:[a,total],
+    why:`Favorable outcomes ÷ total outcomes = ${a}/${total}. That's <b>${fracLabel(a,total)}</b> (any equivalent fraction is also correct).` };
+}
+function genProbComplement(){
+  const c = rnd(PROB_CONTAINERS);
+  const a = ri(2,8), b = ri(2,8), total=a+b;
+  return { kind:'frac',
+    pre:`A ${c.container} has ${a} ${c.itemA} and ${b} ${c.itemB}, all mixed together.`,
+    question:`If you draw one ${c.pick} at random, what is the probability it is NOT a ${c.itemA.split(' ')[0]} one? (as a fraction)`,
+    answer:[b,total],
+    why:`"Not ${c.itemA.split(' ')[0]}" means it's one of the ${b} ${c.itemB}: ${b}/${total} = <b>${fracLabel(b,total)}</b>.` };
+}
+function genProbCompound(){
+  const c = rnd(PROB_CONTAINERS);
+  const a = ri(2,5), b = ri(2,5), total=a+b;
+  const num = a*a, den = total*total;
+  return { kind:'frac',
+    pre:`A ${c.container} has ${a} ${c.itemA} and ${b} ${c.itemB}. You draw one ${c.pick}, put it back, then draw again.`,
+    question:`What is the probability BOTH draws are ${c.itemA.split(' ')[0]} ones? (as a fraction)`,
+    answer:[num,den],
+    why:`Each draw is independent (it's put back first), so multiply the probabilities: ${a}/${total} × ${a}/${total} = <b>${fracLabel(num,den)}</b>.` };
+}
+function genProbExperimental(){
+  const p = rnd(PLAYERS);
+  const attempts = ri(8,20), made = ri(2,attempts-1);
+  return { kind:'frac',
+    pre:`${p} made ${made} of ${attempts} free throws in practice today.`,
+    question:`Based on this data, what is the EXPERIMENTAL probability ${p} makes the next free throw? (as a fraction)`,
+    answer:[made,attempts],
+    why:`Experimental probability comes straight from what actually happened, not a theoretical rule: ${made}/${attempts} = <b>${fracLabel(made,attempts)}</b>.` };
+}
+function genProbability(level){
+  if(level===1) return genProbSimple();
+  if(level===2) return genProbComplement();
+  if(level===3) return genProbCompound();
+  return genProbExperimental();
+}
+
 /* ---------- register ---------- */
 Object.assign(SKILLS, {
   stat:{
@@ -363,5 +418,41 @@ Object.assign(SKILLS, {
         <div class="wb-row"><span style="font-family:var(--mono)">Hitter D: 0, 4, 0, 3, 1</span> hits → mean 1.6, range <b>4</b> (streaky)</div>
       </div>
       <p class="tip">Coach tip: same average, but Player A is Mr. Reliable. In a close game, who do you want shooting?</p>`
+  },
+  probability:{
+    title:"Basic Probability", icon:"🎲", accent:"#ffcf3f",
+    domain:'Data & Statistics',
+    skill:"Find the probability of an event, its opposite, and combined events.",
+    std:"7.SP.C.5, 7.SP.C.7, 7.SP.C.8", maxLevel:4, gen:genProbability,
+    coach:`<p class="lead">Probability is a fraction: <b>favorable outcomes ÷ total outcomes</b> — how many ways the thing you want CAN happen, out of every way anything could happen. A probability is always between 0 (impossible) and 1 (certain). The probability that something does NOT happen is just 1 minus the probability that it does — the two always add up to a whole.</p>
+
+      <p class="lead">An equipment bin has 5 Cubs jerseys and 3 Sox jerseys, all mixed together. If you draw one at random, what's the probability it's a Cubs jersey?</p>
+      <div class="whiteboard">
+        ${fracBarHTML(5,8,"5 Cubs jerseys out of 8 total")}
+        <div class="wb-row">Step 1 — favorable outcomes: 5 (the Cubs jerseys). Total outcomes: 5 + 3 = 8 (every jersey in the bin).</div>
+        <div class="wb-row">Result: 5/8, or <b>5 out of 8</b>.</div>
+      </div>
+
+      <p class="lead">Same bin. What's the probability it's NOT a Cubs jersey?</p>
+      <div class="whiteboard">
+        ${fracBarHTML(3,8,"NOT Cubs = the 3 Sox jerseys, out of 8 total")}
+        <div class="wb-row">"Not Cubs" just means it's one of the OTHER jerseys — the 3 Sox ones. 3/8.</div>
+        <div class="wb-row">Notice 5/8 + 3/8 = 8/8 = 1 whole — the two possibilities always add up to everything.</div>
+      </div>
+
+      <p class="lead">Now two draws in a row. A bag has 3 red marbles and 2 blue marbles. You draw one, put it back, then draw again. What's the probability BOTH draws are red?</p>
+      <div class="whiteboard">
+        <div class="wb-row">Step 1 — each single draw: probability of red = 3/5.</div>
+        <div class="wb-row">Step 2 — since the marble goes back before the second draw, the two draws don't affect each other (they're <b>independent</b>) — multiply the two probabilities: 3/5 × 3/5.</div>
+        <div class="wb-row">Result: (3×3)/(5×5) = <b>9/25</b>.</div>
+      </div>
+
+      <p class="lead">Probability isn't always a clean theoretical setup — sometimes it comes straight from real data. Jamal made 14 of 20 free throws in practice today. Based on that, what's the EXPERIMENTAL probability he makes the next one?</p>
+      <div class="whiteboard">
+        ${fracBarHTML(14,20,"14 makes out of 20 attempts")}
+        <div class="wb-row">Experimental probability just uses what actually happened, not a rule worked out ahead of time: 14/20, which simplifies to <b>7/10</b>.</div>
+      </div>
+
+      <p class="tip">Coach tip: "AND both happen" on independent events means multiply; the probability something does NOT happen is 1 minus the probability it does.</p>`
   }
 });

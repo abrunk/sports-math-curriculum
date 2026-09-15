@@ -281,6 +281,41 @@ function scenarioLevelParams(level, attRanges){
   return { n, attLo, attHi, minGap };
 }
 
+/* A circle with its radius drawn as a dashed line from center to edge,
+   labeled — reuses the .areasvg/.areafill/.arealabel classes from the flat
+   2D shapes above so it drops into a .whiteboard the same way. */
+function circleHTML(r){
+  const scale = Math.min(70/r, 16);
+  const rad = r*scale, mL=44, mT=16, mB=16, mR=44;
+  const cx = mL+rad, cy = mT+rad;
+  const vw = rad*2+mL+mR, vh = rad*2+mT+mB;
+  return `<svg viewBox="0 0 ${vw} ${vh}" class="areasvg">
+    <circle cx="${cx}" cy="${cy}" r="${rad}" class="areafill"/>
+    <line x1="${cx}" y1="${cy}" x2="${cx+rad}" y2="${cy}" class="areadash"/>
+    <text x="${cx+rad/2}" y="${cy-6}" class="arealabel" text-anchor="middle">r: ${r}</text>
+  </svg>`;
+}
+
+/* Two rays sharing a vertex — a fixed, illustrative layout angle (not drawn
+   to the real scale of the numbers involved, same spirit as boxHTML/areaSVG
+   capping their dimensions for legibility) with the two angle labels placed
+   near each ray pair, for complementary/supplementary/vertical-angle Learn
+   content. */
+function angleHTML(labelGiven, labelOther){
+  const cx=20, cy=180, R=150, deg=55, rad=deg*Math.PI/180;
+  const x2 = cx + R*Math.cos(rad), y2 = cy - R*Math.sin(rad);
+  const arcR=34, midRad=(deg/2)*Math.PI/180;
+  const ax = cx+arcR*Math.cos(midRad), ay = cy-arcR*Math.sin(midRad);
+  const midRad2=(deg+(180-deg)/2)*Math.PI/180;
+  const bx = cx+arcR*Math.cos(midRad2), by = cy-arcR*Math.sin(midRad2);
+  return `<svg viewBox="0 0 220 200" class="areasvg">
+    <line x1="${cx-10}" y1="${cy}" x2="${cx+R+10}" y2="${cy}" class="areadash"/>
+    <line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" class="axisline"/>
+    <text x="${ax}" y="${ay}" class="arealabel" text-anchor="middle">${esc(labelGiven)}</text>
+    <text x="${bx}" y="${by}" class="arealabel" text-anchor="middle">${esc(labelOther)}</text>
+  </svg>`;
+}
+
 /* ---------- Progress Report meter ----------
    Color signals status (good/warn/bad) but the % and fraction are always
    shown as text too, so the meter never relies on color alone. */

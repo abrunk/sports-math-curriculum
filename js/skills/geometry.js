@@ -156,6 +156,75 @@ function genVolSABare(level){
 }
 function genVolumeSurfaceArea(level){ return Math.random()<0.5 ? genVolSAWord(level) : genVolSABare(level); }
 
+/* ---------- Circles & Angles (7.G.B.4, 7.G.B.5) ----------
+   Two sub-topics coin-flipped at the harder levels: circle measurement
+   (circumference/area, always using pi≈3.14 — the literal 3.14 rather than
+   Math.PI, so the accepted answer matches what a kid computes by hand from
+   the stated approximation) and angle-pair relationships. Level 4 ties
+   angle pairs back to the Two-Step Equations skill (one angle is a multiple
+   of the other) rather than reaching for a 9th concept. */
+function genCircumferenceWord(){
+  const p = rnd(PLAYERS);
+  const r = ri(2,10);
+  const circ = Math.round(2*3.14*r*10)/10;
+  return { kind:'num', pre:`${p}'s team logo is a circle painted at center court with a radius of ${r} feet.`, question:`What is the circumference, using π ≈ 3.14? Round to the nearest tenth.`, answer:circ,
+    why:`Circumference = 2 × π × r = 2 × 3.14 × ${r} = <b>${circ}</b> feet.` };
+}
+function genCircumferenceBare(){
+  const r = ri(2,10);
+  const circ = Math.round(2*3.14*r*10)/10;
+  return { kind:'num', question:`A circle has radius ${r}. Find its circumference, using π ≈ 3.14. Round to the nearest tenth.`, answer:circ,
+    why:`2 × 3.14 × ${r} = <b>${circ}</b>.` };
+}
+function genCircleAreaWord(){
+  const p = rnd(PLAYERS);
+  const useDiameter = Math.random()<0.5;
+  const r = ri(2,12);
+  const area = Math.round(3.14*r*r*10)/10;
+  if(useDiameter){
+    return { kind:'num', pre:`${p}'s team is painting a circular logo at midfield with a diameter of ${r*2} feet.`, question:`What is the area, using π ≈ 3.14? Round to the nearest tenth.`, answer:area,
+      why:`Diameter ${r*2} means radius = ${r}. Area = π × r² = 3.14 × ${r}² = 3.14 × ${r*r} = <b>${area}</b> square feet.` };
+  }
+  return { kind:'num', pre:`${p}'s team is painting a circular logo at midfield with a radius of ${r} feet.`, question:`What is the area, using π ≈ 3.14? Round to the nearest tenth.`, answer:area,
+    why:`Area = π × r² = 3.14 × ${r}² = 3.14 × ${r*r} = <b>${area}</b> square feet.` };
+}
+function genCircleAreaBare(){
+  const r = ri(2,12);
+  const area = Math.round(3.14*r*r*10)/10;
+  return { kind:'num', question:`A circle has radius ${r}. Find its area, using π ≈ 3.14. Round to the nearest tenth.`, answer:area, why:`3.14 × ${r}² = <b>${area}</b>.` };
+}
+function genAngleComplementary(){
+  const a = ri(10,80);
+  const b = 90-a;
+  return { kind:'num', pre:`Two angles are complementary (they add up to 90°). One of them measures ${a}°.`, question:`What is the measure of the other angle?`, answer:b,
+    why:`Complementary angles sum to 90°: 90 − ${a} = <b>${b}</b>°.` };
+}
+function genAngleSupplementary(){
+  const a = ri(20,160);
+  const b = 180-a;
+  return { kind:'num', pre:`Two angles are supplementary (they add up to 180°, forming a straight line). One of them measures ${a}°.`, question:`What is the measure of the other angle?`, answer:b,
+    why:`Supplementary angles sum to 180°: 180 − ${a} = <b>${b}</b>°.` };
+}
+function genAngleVertical(){
+  const a = ri(20,160);
+  return { kind:'num', pre:`Two lines cross, forming 4 angles. One angle measures ${a}°, and you need the angle directly across from it (its "vertical angle").`, question:`What is the measure of the vertical angle?`, answer:a,
+    why:`Vertical angles (directly across an X from each other) are always EQUAL — no arithmetic needed, it's still <b>${a}</b>°.` };
+}
+function genAngleRatio(){
+  // supplementary angles sum to a fixed 180, so mult (not x) is what's chosen
+  // freely — x = 180/(1+mult) has to come out to a clean integer
+  const mult = rnd([2,3,4,5]);
+  const x = 180/(1+mult);
+  return { kind:'num', pre:`Two angles are supplementary. One angle is ${mult} times the other.`, question:`Solve for the smaller angle: x + ${mult}x = 180.`, answer:x,
+    why:`x + ${mult}x = 180 → ${1+mult}x = 180 → x = 180 ÷ ${1+mult} = <b>${x}</b>°.` };
+}
+function genCircleAngle(level){
+  if(level===1) return Math.random()<0.5 ? genCircumferenceWord() : genCircumferenceBare();
+  if(level===2) return Math.random()<0.5 ? genCircleAreaWord() : genCircleAreaBare();
+  if(level===3) return Math.random()<0.5 ? genAngleComplementary() : genAngleSupplementary();
+  return Math.random()<0.5 ? genAngleVertical() : genAngleRatio();
+}
+
 /* ---------- register ---------- */
 Object.assign(SKILLS, {
   coordinateplane:{
@@ -268,5 +337,50 @@ Object.assign(SKILLS, {
       </div>
 
       <p class="tip">Coach tip: volume can have fractional/decimal edge lengths — the multiplication works the same way.</p>`
+  },
+  circleangle:{
+    title:"Circles & Angles", icon:"⭕", accent:"#ff6a1a",
+    domain:'Geometry',
+    skill:"Circumference and area using pi, plus complementary, supplementary, and vertical angles.",
+    std:"7.G.B.4, 7.G.B.5", maxLevel:4, gen:genCircleAngle,
+    coach:`<p class="lead">Every circle's circumference (distance around) and diameter (distance straight across) have the exact same ratio no matter the circle's size — that ratio is <b>π (pi)</b>, approximately 3.14. Circumference = 2 × π × r (or π × diameter). Area = π × r². For angles: <b>complementary</b> angles add to 90°, <b>supplementary</b> angles add to 180° (a straight line), and <b>vertical</b> angles — the pair directly across an X from each other when two lines cross — are always exactly equal.</p>
+
+      <p class="lead">A team logo painted at center court is a circle with a radius of 6 feet. What is its circumference, using π ≈ 3.14?</p>
+      <div class="whiteboard">
+        ${circleHTML(6)}
+        <div class="wb-row">Circumference = 2 × π × r = 2 × 3.14 × 6 = <b>37.7</b> feet (rounded to the nearest tenth).</div>
+      </div>
+
+      <p class="lead">Same logo. What is its area?</p>
+      <div class="whiteboard">
+        ${circleHTML(6)}
+        <div class="wb-row">Area = π × r² = 3.14 × 6² = 3.14 × 36 = <b>113.0</b> square feet.</div>
+      </div>
+
+      <p class="lead">Two angles are complementary — they add up to 90°. One measures 35°. What's the other?</p>
+      <div class="whiteboard">
+        ${angleHTML('35°','?')}
+        <div class="wb-row">Complementary means the two together make a right angle (90°): 90 − 35 = <b>55°</b>.</div>
+      </div>
+
+      <p class="lead">Two angles are supplementary — they add up to 180°, forming a straight line. One measures 110°. What's the other?</p>
+      <div class="whiteboard">
+        ${angleHTML('110°','?')}
+        <div class="wb-row">Supplementary means the two together make a straight line (180°): 180 − 110 = <b>70°</b>.</div>
+      </div>
+
+      <p class="lead">Two lines cross, forming 4 angles. One angle is 65°. What's the vertical angle — the one directly across the X from it?</p>
+      <div class="whiteboard">
+        <div class="wb-row">Vertical angles don't need any arithmetic at all — the pair directly opposite each other when two lines cross are always exactly <b>equal</b>. The answer is just <b>65°</b>.</div>
+      </div>
+
+      <p class="lead">One more, combining angle pairs with the two-step equation skill: two angles are supplementary, and one is 3 times the other. Solve x + 3x = 180 for the smaller angle.</p>
+      <div class="whiteboard">
+        ${balanceHTML('x + 3x','180')}
+        <div class="wb-row">Step 1 — combine the x terms: x + 3x = 4x, so 4x = 180.</div>
+        <div class="wb-row">Step 2 — divide both sides by 4: x = 180 ÷ 4 = <b>45°</b> (and the other angle is 3 × 45 = 135°, which checks out: 45 + 135 = 180).</div>
+      </div>
+
+      <p class="tip">Coach tip: for circles, always use 3.14 for π unless told otherwise, and round to the nearest tenth. For angles, "complementary" and "90" both start differently but pair up by sound — c comes before s in the alphabet, just like 90 comes before 180.</p>`
   }
 });

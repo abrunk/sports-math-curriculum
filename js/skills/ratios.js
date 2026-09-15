@@ -275,6 +275,79 @@ function genPercentages(level){
   return Math.random()<0.5 ? genPercentagesWord(level) : genPercentagesBare(level);
 }
 
+/* ---------- Proportional Relationships (7.RP.A.2) ----------
+   One notch past plain ratios/unit rates: naming the constant of
+   proportionality k (y = kx), extending a proportional relationship to a
+   new value, and — the genuinely new judgment call — telling a proportional
+   relationship apart from one that only LOOKS like one because it has a
+   flat starting fee thrown in. */
+const PROP_CONTEXTS = [
+  { unit:'minute', total:'points scored', verb:"scores" },
+  { unit:'lap', total:'meters covered', verb:"runs" },
+  { unit:'inning', total:'pitches thrown', verb:"throws" }
+];
+function genPropConstantWord(){
+  const p = rnd(PLAYERS), c = rnd(PROP_CONTEXTS);
+  const k = ri(2,9), x = ri(2,10), y = k*x;
+  return { kind:'num',
+    pre:`${p} ${c.verb} at a steady rate. In ${x} ${c.unit}s, that adds up to ${y} ${c.total}.`,
+    question:`Assuming the rate stays constant, what is the constant of proportionality (${c.total} per ${c.unit})?`,
+    answer:k,
+    why:`k = y ÷ x = ${y} ÷ ${x} = <b>${k}</b>.` };
+}
+function genPropConstantBare(){
+  const k = ri(2,9), x = ri(2,10), y = k*x;
+  return { kind:'num', question:`y = kx. If x = ${x} and y = ${y}, what is k?`, answer:k, why:`k = ${y} ÷ ${x} = <b>${k}</b>.` };
+}
+function genPropExtendWord(){
+  const p = rnd(PLAYERS), c = rnd(PROP_CONTEXTS);
+  const k = ri(2,9), x2 = ri(11,20), ans = k*x2;
+  return { kind:'num',
+    pre:`${p} ${c.verb} at a steady rate of ${k} ${c.total} per ${c.unit}.`,
+    question:`At that same rate, how many ${c.total} in ${x2} ${c.unit}s?`,
+    answer:ans,
+    why:`y = kx = ${k} × ${x2} = <b>${ans}</b>.` };
+}
+function genPropExtendBare(){
+  const k = ri(2,9), x2 = ri(11,20), ans = k*x2;
+  return { kind:'num', question:`y = kx, with k = ${k}. What is y when x = ${x2}?`, answer:ans, why:`y = ${k} × ${x2} = <b>${ans}</b>.` };
+}
+/* Builds a 3-row table that's either genuinely proportional (constant y/x
+   throughout) or only looks proportional because of a flat fee added on top
+   — the fee breaks the constant ratio, which is exactly the tell. */
+function genPropJudgment(){
+  const isProportional = Math.random()<0.5;
+  const k = ri(2,8);
+  const xs = [ri(2,4), ri(5,7), ri(8,10)];
+  let ys, fee=0;
+  if(isProportional){ ys = xs.map(x=>k*x); }
+  else { fee = ri(2,15); ys = xs.map(x=>k*x+fee); }
+  const rows = xs.map((x,i)=>`${x} → ${ys[i]}`).join(',  ');
+  const why = isProportional
+    ? `Check y ÷ x for every row: ${xs.map((x,i)=>`${ys[i]}÷${x}=${ys[i]/x}`).join(', ')} — same every time, so it <b>IS</b> proportional.`
+    : `Check y ÷ x for every row: ${xs.map((x,i)=>`${ys[i]}÷${x}=${(ys[i]/x).toFixed(2)}`).join(', ')} — NOT the same each time (there's a flat +${fee} baked in), so it is <b>NOT</b> proportional.`;
+  return { kind:'bool',
+    pre:`A table of (x, y) pairs: ${rows}`,
+    question:`Is this a proportional relationship (does y = kx for some constant k)?`,
+    answer:isProportional,
+    why };
+}
+function genProportional(level){
+  if(level===1) return Math.random()<0.5 ? genPropConstantWord() : genPropConstantBare();
+  if(level===2) return Math.random()<0.5 ? genPropExtendWord() : genPropExtendBare();
+  if(level===3) return genPropJudgment();
+  // level 4: judgment with a real-world flat-fee framing, phrased as a word problem instead of a bare table
+  const p = rnd(PLAYERS);
+  const perGame = ri(3,10), fee = ri(5,20);
+  const games = ri(3,6);
+  const total = perGame*games + fee;
+  return { kind:'bool',
+    pre:`A ticket plan costs a flat $${fee} membership fee, plus $${perGame} per game attended. Someone who goes to ${games} games pays $${total} total.`,
+    question:`Is the total cost proportional to the number of games attended?`,
+    answer:false,
+    why:`Proportional means total = k × games with NO extra constant. Here there's a flat $${fee} added regardless of games attended, so doubling the games doesn't double the cost — <b>NOT</b> proportional.` };
+}
+
 /* ---------- register ---------- */
 Object.assign(SKILLS, {
   ratios:{
@@ -382,5 +455,38 @@ Object.assign(SKILLS, {
       </div>
 
       <p class="tip">Coach tip: "what percent OF" means multiply; "what percent IS" means divide; percent change always divides by the ORIGINAL amount.</p>`
+  },
+  proportional:{
+    title:"Proportional Relationships", icon:"📈", accent:"#54e07a",
+    domain:'Ratios & Rates',
+    skill:"Find the constant of proportionality, and tell a proportional relationship from one that only looks like one.",
+    std:"7.RP.A.2", maxLevel:4, gen:genProportional,
+    coach:`<p class="lead">A relationship is <b>proportional</b> when y = kx for some constant number k — meaning y ÷ x gives the exact same answer no matter which pair of values you check. That constant, k, is called the <b>constant of proportionality</b>. The real skill isn't just computing k — it's spotting when a relationship LOOKS proportional but isn't, usually because something extra (like a flat fee) got added on top.</p>
+
+      <p class="lead">Priya runs at a steady pace. In 4 laps, she covers 800 meters. What's the constant of proportionality (meters per lap)?</p>
+      <div class="whiteboard">
+        <div class="wb-row">k = y ÷ x = 800 ÷ 4 = <b>200</b> meters per lap.</div>
+        <div class="wb-row">That means the equation for Priya's running is y = 200x, where x is laps and y is meters.</div>
+      </div>
+
+      <p class="lead">Once you know k, you can predict any value on the relationship — not just the one you were given. At Priya's rate of 200 meters per lap, how far does she go in 15 laps?</p>
+      <div class="whiteboard">
+        <div class="wb-row">y = kx = 200 × 15 = <b>3,000</b> meters.</div>
+      </div>
+
+      <p class="lead">Now the real test: is this table actually proportional? (2, 10), (5, 25), (8, 40).</p>
+      <div class="whiteboard">
+        <div class="wb-row">Check y ÷ x for EVERY pair, not just the first one: 10÷2 = 5, 25÷5 = 5, 40÷8 = 5.</div>
+        <div class="wb-row">Same value (5) every single time — this table <b>IS</b> proportional, with k = 5.</div>
+      </div>
+
+      <p class="lead">Here's the trap. A ticket plan costs a flat $10 membership fee, plus $6 per game attended. Someone who goes to 5 games pays $40 total. Is the total cost proportional to games attended?</p>
+      <div class="whiteboard">
+        <div class="wb-row">Check a few points on this plan: 1 game → $16. 2 games → $22. 5 games → $40.</div>
+        <div class="wb-row">y ÷ x: 16÷1 = 16, but 22÷2 = 11, and 40÷5 = 8 — three DIFFERENT answers, not one constant k.</div>
+        <div class="wb-row">The flat $10 fee is the giveaway: doubling the games from 1 to 2 doesn't double the total cost. This is <b>NOT</b> proportional.</div>
+      </div>
+
+      <p class="tip">Coach tip: the fastest check is always the same — pick at least two pairs and see if y ÷ x matches. If it ever changes, it's not proportional, no matter how close the numbers look.</p>`
   }
 });

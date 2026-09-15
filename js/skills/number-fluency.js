@@ -201,6 +201,95 @@ function genDecBare(level){
 }
 function genDec(level){ return Math.random()<0.5 ? genDecWord(level) : genDecBare(level); }
 
+/* ---------- Integer Operations (7.NS.A) ----------
+   Framed around "plus/minus" — a real basketball/hockey stat (net point
+   differential while a player is on the floor), which is literally signed-
+   integer addition, so this content has a genuine sports hook rather than a
+   forced one. Answers can be negative, so this is the one skill that uses
+   kind:'int' instead of 'num' — see js/engine.js for why plain 'num' won't
+   do (the iPad's numeric keypad has no minus key). */
+function fmtSigned(n){ return n<0 ? `(−${-n})` : `${n}`; }
+function fmtIntChain(nums){
+  return nums.map((n,i)=> i===0 ? fmtSigned(n) : (n<0 ? `− ${-n}` : `+ ${n}`)).join(' ');
+}
+function genIntL1(){
+  const pos = ri(1,12), neg = -ri(1,12);
+  const aFirst = Math.random()<0.5;
+  const isAdd = Math.random()<0.5;
+  const a = aFirst?pos:neg, b = aFirst?neg:pos;
+  return { a, b, isAdd, ans: isAdd ? a+b : a-b };
+}
+function genIntL2(){
+  const nums = Array.from({length:3}, ()=> (Math.random()<0.5?1:-1)*ri(1,15));
+  return { nums, ans: nums.reduce((x,y)=>x+y,0) };
+}
+function genIntL3(){
+  let a = ri(2,12)*(Math.random()<0.5?1:-1);
+  let b = ri(2,12)*(Math.random()<0.5?1:-1);
+  if(a>0 && b>0) a = -a;
+  return { a, b, ans:a*b };
+}
+function genIntL4(){
+  let divisor = ri(2,10)*(Math.random()<0.5?1:-1);
+  let quotient = ri(2,10)*(Math.random()<0.5?1:-1);
+  if(divisor>0 && quotient>0) divisor = -divisor;
+  return { divisor, quotient, dividend:divisor*quotient };
+}
+/* Word problems below intentionally do NOT reuse genIntL1/L3/L4's raw
+   {a,b}/{divisor,quotient} pairs for every branch — those helpers force
+   "not both positive," which is exactly right for an abstract "compute
+   this" drill, but wrong wherever the English narrative needs a plain
+   positive count ("for 5 quarters," never "for −5 quarters"). Using the
+   abstract pair there directly produced answers with the flipped sign
+   from what the story described (caught via generated-example review, not
+   just unit checks — e.g. "-4 every quarter, for 5 quarters" was returning
+   +20 instead of the narratively-correct −20). So each word-problem branch
+   below generates its own independently-signed pieces instead. */
+function genIntWord(level){
+  const p = rnd(PLAYERS);
+  if(level===1){
+    if(Math.random()<0.5){
+      const a = ri(1,12)*(Math.random()<0.5?1:-1), b = ri(1,12)*(Math.random()<0.5?1:-1), ans = a+b;
+      return { kind:'int', pre:`${p}'s plus/minus was ${a} in the first half and ${b} in the second half.`, question:`What was ${p}'s plus/minus for the full game?`, answer:ans,
+        why:`Adding a negative moves you DOWN the number line, same as subtracting: ${fmtSigned(a)} + ${fmtSigned(b)} = <b>${ans}</b>.` };
+    }
+    const lead = ri(1,15), runBy = ri(1,20), ans = lead-runBy;
+    return { kind:'int', pre:`${p}'s team was ahead by ${lead}, then got outscored by ${runBy} points in a bad stretch.`, question:`What is the new score differential? (Positive = still ahead, negative = now behind)`, answer:ans,
+      why:`Subtracting ${runBy} is the same as adding its opposite: ${lead} − ${runBy} = <b>${ans}</b>.` };
+  }
+  if(level===2){
+    const { nums, ans } = genIntL2();
+    return { kind:'int', pre:`${p}'s plus/minus each quarter: ${fmtIntChain(nums)}`, question:`What was ${p}'s plus/minus for the whole game?`, answer:ans,
+      why:`Add them in order, tracking the sign each time: ${fmtIntChain(nums)} = <b>${ans}</b>.` };
+  }
+  if(level===3){
+    const a = ri(2,12)*(Math.random()<0.5?1:-1), quarters = ri(2,9), ans = a*quarters;
+    return { kind:'int', pre:`${p}'s plus/minus was a steady ${a} every quarter, for all ${quarters} quarters of the game.`, question:`What was ${p}'s total plus/minus?`, answer:ans,
+      why:`Same signs multiply to a positive, different signs multiply to a negative: ${fmtSigned(a)} × ${quarters} = <b>${ans}</b>.` };
+  }
+  const quarters = ri(2,9), perQuarter = ri(2,12)*(Math.random()<0.5?1:-1), dividend = perQuarter*quarters;
+  return { kind:'int', pre:`${p}'s team's total plus/minus for the game was ${dividend}, spread evenly across ${quarters} quarters.`, question:`What was the plus/minus per quarter?`, answer:perQuarter,
+    why:`Same sign rule as multiplying: ${fmtSigned(dividend)} ÷ ${quarters} = <b>${perQuarter}</b>.` };
+}
+function genIntBare(level){
+  if(level===1){
+    const { a, b, isAdd, ans } = genIntL1();
+    return { kind:'int', question:`${fmtSigned(a)} ${isAdd?'+':'−'} ${fmtSigned(b)} = ?`, answer:ans,
+      why:`${fmtSigned(a)} ${isAdd?'+':'−'} ${fmtSigned(b)} = <b>${ans}</b>.` };
+  }
+  if(level===2){
+    const { nums, ans } = genIntL2();
+    return { kind:'int', question:`${fmtIntChain(nums)} = ?`, answer:ans, why:`${fmtIntChain(nums)} = <b>${ans}</b>.` };
+  }
+  if(level===3){
+    const { a, b, ans } = genIntL3();
+    return { kind:'int', question:`${fmtSigned(a)} × ${fmtSigned(b)} = ?`, answer:ans, why:`Same signs → positive, different signs → negative: <b>${ans}</b>.` };
+  }
+  const { divisor, quotient, dividend } = genIntL4();
+  return { kind:'int', question:`${fmtSigned(dividend)} ÷ ${fmtSigned(divisor)} = ?`, answer:quotient, why:`Same sign rule as multiplying: <b>${quotient}</b>.` };
+}
+function genIntegerOps(level){ return Math.random()<0.5 ? genIntWord(level) : genIntBare(level); }
+
 /* ---------- register ---------- */
 Object.assign(SKILLS, {
   addsub:{
@@ -305,5 +394,45 @@ Object.assign(SKILLS, {
         <div class="wb-row">Result: <b>12.8</b> miles this week.</div>
       </div>
       <p class="tip">Coach tip: for multiplication, count decimal places in the PROBLEM, not the answer — 3.2 has one decimal place, so the answer needs exactly one.</p>`
+  },
+  integerops:{
+    title:"Integer Operations", icon:"➖", accent:"#b389f9",
+    domain:'Number Fluency',
+    skill:"Add, subtract, multiply, and divide positive and negative numbers.",
+    std:"7.NS.A.1, 7.NS.A.2", maxLevel:4, gen:genIntegerOps,
+    coach:`<p class="lead">Basketball's <b>plus/minus</b> stat is a perfect example of a negative number: it tracks how many more (or fewer) points your team scored while you were on the floor. A +9 means your team was winning big during your minutes; a −6 means the other team was pulling ahead. <b>Adding</b> a negative number moves you DOWN the number line — the exact opposite direction from adding a positive one. <b>Subtracting</b> a number always does the same thing as adding its opposite, which is why "− (−5)" and "+ 5" land in the exact same place.</p>
+
+      <p class="lead">Marcus's plus/minus was −4 in the first half and +9 in the second half. What was his plus/minus for the whole game?</p>
+      <div class="whiteboard">
+        <div class="wb-row">(−4) + 9 = ?</div>
+        ${numberLineHTML([-4,5],[{value:-4,label:'Start: −4',color:'var(--orange)'},{value:5,label:'End: 5',color:'var(--cyan)'}],-6,10)}
+        <div class="wb-row">Step 1 — start at −4 on the number line.</div>
+        <div class="wb-row">Step 2 — adding a POSITIVE 9 means moving 9 spaces to the RIGHT.</div>
+        <div class="wb-row">Result: land on <b>5</b>.</div>
+      </div>
+
+      <p class="lead">Diego's team was ahead by 6, then got outscored by 14 points in a bad third quarter. What's the new score differential? (Positive = still ahead, negative = now behind)</p>
+      <div class="whiteboard">
+        <div class="wb-row">6 − 14 = ?</div>
+        ${numberLineHTML([6,-8],[{value:6,label:'Start: 6',color:'var(--orange)'},{value:-8,label:'End: −8',color:'var(--cyan)'}],-12,10)}
+        <div class="wb-row">Step 1 — start at 6. Subtracting 14 means moving 14 spaces to the LEFT — same direction as adding a negative 14.</div>
+        <div class="wb-row">Result: land on <b>−8</b> — the team is now down by 8.</div>
+      </div>
+
+      <p class="lead">Now multiplication and division, which follow one shared rule: <b>same signs give a positive answer, different signs give a negative answer.</b> A team's plus/minus was a steady −3 every quarter, for all 4 quarters. What was their total plus/minus?</p>
+      <div class="whiteboard">
+        <div class="wb-row">(−3) × 4 = ?</div>
+        <div class="wb-row">Step 1 — one number is negative, the other positive — different signs, so the answer is negative.</div>
+        <div class="wb-row">Step 2 — multiply the digits like normal: 3 × 4 = 12, then apply the sign: <b>−12</b>.</div>
+      </div>
+
+      <p class="lead">Same rule works in reverse for division. A team's total plus/minus for the game was −20, spread evenly across 4 quarters. What was the plus/minus per quarter?</p>
+      <div class="whiteboard">
+        <div class="wb-row">(−20) ÷ 4 = ?</div>
+        <div class="wb-row">Step 1 — different signs (negative ÷ positive), so the answer is negative.</div>
+        <div class="wb-row">Step 2 — divide the digits: 20 ÷ 4 = 5, then apply the sign: <b>−5</b> per quarter.</div>
+      </div>
+
+      <p class="tip">Coach tip: for the answer box, type the minus sign right before the number, like "-8" — no spaces, no parentheses needed.</p>`
   }
 });

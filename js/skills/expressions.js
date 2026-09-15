@@ -118,6 +118,48 @@ function genEquationBare(level){
 }
 function genEquations(level){ return Math.random()<0.5 ? genEquationWord(level) : genEquationBare(level); }
 
+/* ---------- Two-Step Equations (7.EE.B.4) ----------
+   One step past One-Step Equations: two operations to undo (level 1-2), a
+   negative coefficient (level 3 — deliberately NOT "variables on both
+   sides," which is an 8th-grade reach), and a light distributive-property
+   intro (level 4: a(x+b)=q, expand then solve). Every level's answer x is
+   generated as a positive count, so — unlike Integer Operations — this
+   stays on kind:'num' throughout. */
+function genTwoStepWord(level){
+  const p = rnd(PLAYERS);
+  if(level===1){
+    const a=ri(2,9), x=ri(2,12), b=ri(1,20), q=a*x+b;
+    return { kind:'num', pre:`${p} scores ${a} points per basket, plus a ${b}-point bonus for the game.`, question:`${p} finished with ${q} points total. How many baskets did ${p} make? (Solve ${a}x + ${b} = ${q})`, answer:x,
+      why:`${a}x + ${b} = ${q} → ${a}x = ${q} − ${b} = ${q-b} → x = ${q-b} ÷ ${a} = <b>${x}</b>.` };
+  }
+  if(level===2){
+    const a=ri(2,9), x=ri(2,12);
+    const b=ri(1, Math.max(1, a*x-1)); // keep q = a*x - b at least 1 — a team can't finish with a negative score
+    const q=a*x-b;
+    return { kind:'num', pre:`${p}'s team earns ${a} points per basket, minus a ${b}-point penalty already applied.`, question:`They finished with ${q} points. How many baskets did they make? (Solve ${a}x − ${b} = ${q})`, answer:x,
+      why:`${a}x − ${b} = ${q} → ${a}x = ${q} + ${b} = ${q+b} → x = ${q+b} ÷ ${a} = <b>${x}</b>.` };
+  }
+  if(level===3){
+    const a=ri(2,9), x=ri(2,10), b=ri(1,15), q=-(a*x)+b;
+    return { kind:'num', pre:`${p}'s team LOSES ${a} points per penalty, starting from a ${b}-point cushion.`, question:`After some number of penalties, they were at ${q} points relative to the cushion. How many penalties happened? (Solve −${a}x + ${b} = ${q})`, answer:x,
+      why:`−${a}x + ${b} = ${q} → −${a}x = ${q} − ${b} = ${q-b} → x = (${q-b}) ÷ (−${a}) = <b>${x}</b>.` };
+  }
+  const a=ri(2,6), x=ri(2,10), b=ri(1,10), inner=x+b, q=a*inner;
+  return { kind:'num', pre:`${p}'s bonus formula is ${a} times the sum of (games played plus ${b}).`, question:`If the total bonus was ${q} points, how many games were played? (Solve ${a}(x + ${b}) = ${q})`, answer:x,
+    why:`${a}(x + ${b}) = ${q} → x + ${b} = ${q} ÷ ${a} = ${inner} → x = ${inner} − ${b} = <b>${x}</b>.` };
+}
+function genTwoStepBare(level){
+  if(level===1){ const a=ri(2,9), x=ri(2,12), b=ri(1,20), q=a*x+b;
+    return { kind:'num', question:`Solve for x: ${a}x + ${b} = ${q}`, answer:x, why:`x = (${q} − ${b}) ÷ ${a} = <b>${x}</b>.` }; }
+  if(level===2){ const a=ri(2,9), x=ri(2,12), b=ri(1,20), q=a*x-b;
+    return { kind:'num', question:`Solve for x: ${a}x − ${b} = ${q}`, answer:x, why:`x = (${q} + ${b}) ÷ ${a} = <b>${x}</b>.` }; }
+  if(level===3){ const a=ri(2,9), x=ri(2,10), b=ri(1,15), q=-(a*x)+b;
+    return { kind:'num', question:`Solve for x: −${a}x + ${b} = ${q}`, answer:x, why:`x = (${q}−${b}) ÷ (−${a}) = <b>${x}</b>.` }; }
+  const a=ri(2,6), x=ri(2,10), b=ri(1,10), inner=x+b, q=a*inner;
+  return { kind:'num', question:`Solve for x: ${a}(x + ${b}) = ${q}`, answer:x, why:`x + ${b} = ${q}÷${a} = ${inner} → x = <b>${x}</b>.` };
+}
+function genTwoStep(level){ return Math.random()<0.5 ? genTwoStepWord(level) : genTwoStepBare(level); }
+
 /* ---------- register ---------- */
 Object.assign(SKILLS, {
   orderofops:{
@@ -225,5 +267,42 @@ Object.assign(SKILLS, {
       </div>
 
       <p class="tip">Coach tip: whatever you do to one side of the equation, you have to do to the other side too.</p>`
+  },
+  twostep:{
+    title:"Two-Step Equations", icon:"⚙️", accent:"#28d6e6",
+    domain:'Expressions & Equations',
+    skill:"Solve equations that take two undo-steps, including a negative coefficient and a light distributive-property intro.",
+    std:"7.EE.B.4", maxLevel:4, gen:genTwoStep,
+    coach:`<p class="lead">A one-step equation undoes a single operation. A <b>two-step equation</b> has two things happening to x, so it takes two undo-steps — and order matters: undo <b>addition/subtraction first</b>, then undo <b>multiplication/division</b>. That's the reverse of order of operations, which makes sense: you're peeling the equation apart in the opposite order it was built.</p>
+
+      <p class="lead">Marcus scores 5 points per basket, plus a 10-point bonus for the game. He finished with 45 points. How many baskets did he make? (Solve 5x + 10 = 45)</p>
+      <div class="whiteboard">
+        ${balanceHTML('5x + 10','45')}
+        <div class="wb-row">Step 1 — undo the "+10" first: subtract 10 from BOTH sides. 5x = 45 − 10 = 35.</div>
+        <div class="wb-row">Step 2 — now undo the "×5": divide both sides by 5. x = 35 ÷ 5 = <b>7</b> baskets.</div>
+      </div>
+
+      <p class="lead">Sofia's team earns 8 points per basket, minus a 6-point penalty already applied. They finished with 42 points. How many baskets? (Solve 8x − 6 = 42)</p>
+      <div class="whiteboard">
+        ${balanceHTML('8x − 6','42')}
+        <div class="wb-row">Step 1 — undo the "−6" first: add 6 to both sides. 8x = 42 + 6 = 48.</div>
+        <div class="wb-row">Step 2 — undo the "×8": divide both sides by 8. x = 48 ÷ 8 = <b>6</b> baskets.</div>
+      </div>
+
+      <p class="lead">Now a negative coefficient. A team LOSES 4 points per penalty, starting from a 20-point cushion. After some penalties they were at 8 points relative to the cushion. How many penalties? (Solve −4x + 20 = 8)</p>
+      <div class="whiteboard">
+        ${balanceHTML('−4x + 20','8')}
+        <div class="wb-row">Step 1 — undo the "+20": subtract 20 from both sides. −4x = 8 − 20 = −12.</div>
+        <div class="wb-row">Step 2 — undo the "×(−4)": divide both sides by −4. Negative ÷ negative = positive: x = −12 ÷ −4 = <b>3</b> penalties.</div>
+      </div>
+
+      <p class="lead">Last piece: the distributive property. Leo's bonus formula is 3 times the sum of (games played plus 5). His total bonus was 36 points. How many games did he play? (Solve 3(x + 5) = 36)</p>
+      <div class="whiteboard">
+        ${balanceHTML('3(x + 5)','36')}
+        <div class="wb-row">Step 1 — instead of distributing the 3, it's faster to undo it directly: divide BOTH sides by 3 first. x + 5 = 36 ÷ 3 = 12.</div>
+        <div class="wb-row">Step 2 — now it's just one step: subtract 5 from both sides. x = 12 − 5 = <b>7</b> games.</div>
+      </div>
+
+      <p class="tip">Coach tip: undo addition/subtraction BEFORE multiplication/division — the opposite order from how you'd evaluate the expression forward.</p>`
   }
 });
