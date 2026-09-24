@@ -544,7 +544,7 @@ function renderCoachPanel(c){
 
   let feedback = '';
   if(state.answered){
-    const head2 = state.correct ? rnd(PRAISE) : "Not quite";
+    const head2 = state.correct ? correctHead(state.streak) : "Not quite";
     const lead = state.correct
       ? `<div class="why">Why: ${p.why}</div>`
       : `<div class="why">The right call was <b>${esc(p.candidates[p.answer].name)}</b>. ${p.why}</div>`;
@@ -600,7 +600,7 @@ function feedbackHTML(p){
       return `<button class="opt ${cls}" disabled>${esc(ch)}</button>`;
     }).join('')}</div>`;
   }
-  const head = state.correct ? rnd(PRAISE) : "Not quite";
+  const head = state.correct ? correctHead(state.streak) : "Not quite";
   const lead = state.correct
     ? `<div class="why">Why: ${p.why}</div>`
     : `<div class="why">The answer is <b>${esc(displayAnswer(p))}</b>. ${p.why}</div>`;

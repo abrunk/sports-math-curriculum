@@ -6,7 +6,11 @@ const SPORTS = [
   {stat:"hits",   emoji:"⚾"},
   {stat:"goals",  emoji:"⚽"},
 ];
-const PRAISE = ["Swish!","Nothing but net!","Buzzer beater!","Home run!","Grand slam!","GOAL!","Top corner!","Slam dunk!","You're on fire!","Money!"];
+/* Plain headline for a right answer. No sports catchphrases: they read as corny
+   and rarely matched the sport in the question. A streak is noted every 5 in a row. */
+function correctHead(streak){
+  return streak >= 5 && streak % 5 === 0 ? `Correct — ${streak} in a row` : "Correct";
+}
 
 const rnd = a => a[Math.floor(Math.random()*a.length)];
 const ri  = (lo,hi) => Math.floor(Math.random()*(hi-lo+1))+lo;
